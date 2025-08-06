@@ -1,75 +1,123 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Col, Row } from "@/components/layout/Flex";
+import { ThemeText } from "@/components/layout/ThemeText";
+import PolishCard from "@/components/ui/PolishCard";
+import { GRID_GAP, SPACING } from "@/constants/layout";
+import { Polish, SectionData } from "@/types/data";
+import { useEffect, useState } from "react";
+import { SectionList, StyleSheet, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const data = [
+  {
+    title: 'Basic Mag',
+    data: [
+      {
+        polishId: '1',
+        poslishName: 'black',
+        isFavorites: true,
+        stock: 1,
+        brandName: 'Cleto',
+        seriesName: 'Basic Mag',
+        color: 'black',
+        images: [{url:'https://baseec-img-mng.akamaized.net/images/item/origin/d7a6976fa192ce8ef274b8090d5ed415.png?imformat=generic'}]
+      },
+      {
+        polishId: '2',
+        poslishName: 'white',
+        isFavorites: false,
+        stock: 1,
+        brandName: 'Cleto',
+        seriesName: 'Basic Mag',
+        color: 'white',
+        images: [{url:'https://baseec-img-mng.akamaized.net/images/item/origin/216b7ebf087767efa4afe05337448956.png?imformat=generic'}]
+      },
+      {
+        polishId: '3',
+        poslishName: 'beige',
+        isFavorites: false,
+        stock: 1,
+        brandName: 'Cleto',
+        seriesName: 'Basic Mag',
+        color: 'beige',
+        images: [{url: 'https://baseec-img-mng.akamaized.net/images/item/origin/4c0bdfaa86584b27cd8ae73676dfbc7e.png?imformat=generic'}]
+      },
+    ]
+  }
+]
 
-export default function HomeScreen() {
+function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
+  const result: T[][] = []
+  for(let i=0;i< data.length;i+=columnsPerRow){
+    result.push(data.slice(i, i + columnsPerRow))
+  }
+  return result
+}
+
+export default function Index() {
+  const [polishSectionData, setPolishData] = useState<SectionData>([])
+  useEffect(() => {
+    const newData = data
+    const polishList = data[0].data
+    const dataLength = 20
+    let id = polishList.length
+    while(newData[0].data.length < dataLength){
+      const index = Math.floor(Math.random() * polishList.length)
+      id += 1
+      newData[0].data.push({
+        ...polishList[index],
+        polishId: `${id}`,
+      })
+    }
+    newData.push({
+      title: 'HOHO ME',
+      data: newData[0].data
+    })
+    const sectionData = newData.map(item => ({
+      ...item,
+      data: groupInRows<Polish>(item.data, 3)
+    }))
+    console.log(sectionData);
+    
+    setPolishData(sectionData)
+  }, [])
+  
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <SectionList
+        sections={polishSectionData}
+        stickySectionHeadersEnabled={true}
+        renderSectionHeader={({section}) => (
+          <View style={styles.sectionHeader}>
+            <ThemeText type="subtitle">{section.title}</ThemeText>
+          </View>
+        )}
+        renderItem={({item}) => (
+          <View style={styles.row}>
+            <Row>
+              {item.map(col => (
+                <Col key={col.polishId} base={4}>
+                  <PolishCard data={col}></PolishCard>
+                </Col>
+              ))}
+            </Row>
+          </View>
+        )}
+      ></SectionList>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    paddingTop: SPACING.xxl,
+    paddingHorizontal: SPACING.lg
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  row: {
+    width: '100%',
+    marginTop: GRID_GAP, 
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  sectionHeader: {
+    paddingVertical: SPACING.md,
+    backgroundColor: 'rgb(242, 242, 242)'
+  }
 });
