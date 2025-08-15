@@ -1,48 +1,20 @@
-import { Col, Flex, Row } from '@/components/layout/Flex';
-import { ThemeText } from '@/components/layout/ThemeText';
-import PolishCard from '@/components/ui/PolishCard';
-import { SPACING } from '@/constants/layout';
-import { StyleSheet, Text, View } from 'react-native';
+import {Button, View} from "react-native"
+import {useState} from "react";
+import TopDrawer from "@/components/ui/TopDrawer"
+import {MOBILE_BAR_HEIGHT} from "@/constants/layout";
+import {ThemeText} from "@/components/layout/ThemeText";
+import Topbar from "@/components/ui/Topbar";
 
-
-const styles = StyleSheet.create({
-    box: {
-        borderColor: 'red',
-        borderWidth: 2
-    }
-})
 
 export default function Components(){
-    const polishData = {
-        polishId: '3',
-        poslishName: 'beige',
-        isFavorites: false,
-        stock: 1,
-        brandName: 'Cleto',
-        seriesName: 'Basic Mag',
-        color: 'beige',
-        images: [{url: 'https://baseec-img-mng.akamaized.net/images/item/origin/216b7ebf087767efa4afe05337448956.png?imformat=generic'}]
-      }
+    const [isOpen, setIsOpen] = useState(false)
     return(
-        <>
-        <Flex justify="between" style={{padding: SPACING.sm}}>
-            <ThemeText type="title">left</ThemeText>
-            <ThemeText type="subtitle">right</ThemeText>
-        </Flex>
-        <Flex justify="end">
-            <Text>left</Text>
-            <Text>right</Text>
-        </Flex>
-        <Row>
-            {[...Array(10)].map((n, i) => (
-                <Col base={4} key={i}>
-                    <View style={styles.box}>
-                        <Text>{i}</Text>
-                    </View>
-                </Col>
-            ))}
-        </Row>
-        <PolishCard data={polishData}></PolishCard>
-        </>
+        <View style={{paddingTop: MOBILE_BAR_HEIGHT}}>
+            {/*<Topbar><ThemeText>Content</ThemeText></Topbar>*/}
+            <Button onPress={() => {setIsOpen(true)}} title="Open"></Button>
+            <TopDrawer show={isOpen} direction="b-t" onClose={() => setIsOpen(false)} footer={(<Button onPress={() => {setIsOpen(false)}} title="Close"></Button>)}>
+                <ThemeText>Content</ThemeText>
+            </TopDrawer>
+        </View>
     )
 }

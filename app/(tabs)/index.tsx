@@ -1,7 +1,7 @@
 import { Col, Row, Flex } from "@/components/layout/Flex";
 import { ThemeText } from "@/components/layout/ThemeText";
 import PolishCard from "@/components/ui/PolishCard";
-import { GRID_GAP, SPACING } from "@/constants/layout";
+import {GRID_GAP, MOBILE_BAR_HEIGHT, SPACING} from "@/constants/layout";
 import { Polish, SectionData } from "@/types/data";
 import { useEffect, useState } from "react";
 import { SectionList, StyleSheet, View } from 'react-native';
@@ -66,7 +66,7 @@ export default function Index() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: SPACING.xxl,
+    paddingTop: MOBILE_BAR_HEIGHT,
     paddingHorizontal: SPACING.lg
   },
   row: {

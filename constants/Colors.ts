@@ -5,6 +5,11 @@ export const THEME_COLORS = {
 
 }
 
+export const LINE_COLORS = {
+    default: '#717171',
+    second: '#d3d3d3',
+}
+
 export const TEXT_COLORS = {
     default: '#000',
     second: '#aaa',

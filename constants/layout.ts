@@ -26,6 +26,8 @@ export const FONT_SIZES = {
   xl: 24,
   xxl: 28,
 };
+
+export const  MOBILE_BAR_HEIGHT = SPACING.xxl
 export const FONT_WEIGHTS = {
   regular: 'normal',
   medium: '500',
