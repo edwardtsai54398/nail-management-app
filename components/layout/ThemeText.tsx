@@ -1,4 +1,4 @@
-import { TEXT_COLORS, THEME_COLORS } from '@/constants/colors';
+import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors';
 import { FONT_SIZES } from '@/constants/layout';
 import { ReactNode } from "react";
 import { StyleSheet, Text, type TextProps } from 'react-native';
@@ -51,7 +51,7 @@ export function ThemeText({
 const styles = StyleSheet.create({
   default: {
     fontSize: FONT_SIZES.sm,
-    lineHeight: 24,
+    lineHeight: FONT_SIZES.sm * 1.2,
   },
   title: {
     fontSize: FONT_SIZES.xxl,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
-    lineHeight: 30,
+    lineHeight: FONT_SIZES.sm * 1.2,
     fontSize: FONT_SIZES.sm,
     color: TEXT_COLORS.link
   },

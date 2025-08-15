@@ -3,16 +3,25 @@ export type PolishImage = {
 }
 export type Polish = {
     polishId: string
-    poslishName: string
+    polishName: string
     isFavorites: boolean
     stock: number
+    brandId?: string
     brandName: string
+    seriesId?: string
     seriesName: string
-    color: string
+    colors: string[]
     images: PolishImage[]
+    polishTypeKey: string,
+    polishTypeName: string,
 }
 
-export type SectionData = {
-    title: string,
-    data: Polish[][]
-}[]
+export type SeriesData = {
+    brandId: string,
+    brandName: string,
+    seriesId: string
+    seriesName: string
+}
+
+
+export type SectionData =(SeriesData & {data: Polish[][]})[]
