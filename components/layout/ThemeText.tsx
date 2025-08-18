@@ -1,7 +1,7 @@
 import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors';
 import { FONT_SIZES } from '@/constants/layout';
 import { ReactNode } from "react";
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { StyleSheet, Animated, type TextProps,  } from 'react-native';
 
 type TextColorsKeys = keyof typeof TEXT_COLORS
 type ThemeColorsKeys = keyof typeof THEME_COLORS
@@ -33,7 +33,7 @@ export function ThemeText({
         }
     }
   return (
-    <Text
+    <Animated.Text
       style={[
         { color: getTextColor(color) },
         type === 'default' ? styles.default : undefined,
@@ -44,7 +44,7 @@ export function ThemeText({
         style,
       ]}
       {...reset}
-    >{children}</Text>
+    >{children}</Animated.Text>
   );
 }
 
