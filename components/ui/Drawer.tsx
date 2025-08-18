@@ -1,8 +1,8 @@
 import {Modal, View, ScrollView, StyleSheet, Animated, TouchableWithoutFeedback, useAnimatedValue} from 'react-native'
-import {ThemeText} from "@/components/layout/ThemeText";
-import {ReactNode, useEffect, useState} from "react";
+import {ReactNode, useEffect, useState, useContext} from "react";
 import {SPACING} from "@/constants/layout";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {OverlayContext} from "@/components/ui/OverlayProvider";
 
 interface DrawerProps {
     show: boolean
@@ -15,20 +15,10 @@ interface DrawerProps {
 
 
 const styles = StyleSheet.create({
-    overlayContainer: {
-        position: 'absolute',
-        zIndex: 2000,
-        height: '100%',
-        width: '100%',
-    },
-    overlay: {
-        height: '100%',
-        width: '100%',
-        backgroundColor: 'rgba(144,144,144,0.5)',
-    },
     drawerContainer: {
         position: 'absolute',
         left: 0,
+        zIndex: 2010,
         width: '100%',
         backgroundColor: 'white',
         overflow: 'hidden',
@@ -52,24 +42,31 @@ const styles = StyleSheet.create({
 })
 
 export default function Drawer({show, onClose, children, drawerHeight = 300, footer, direction = 't-b'}: DrawerProps) {
-    const [modelVisible, setModelVisible] = useState<boolean>(false)
+    const { register, unregister, drawerOpenCount } = useContext(OverlayContext);
     const insets = useSafeAreaInsets()
+
+    //animation
     const extraTranslateY = (direction === 't-b' ? (insets.top * -1) : insets.bottom)
     const translateY = useAnimatedValue(drawerHeight * (direction === 't-b' ? -1 : 1) + extraTranslateY)
-    const opacity = useAnimatedValue(0)
     const duration = 250
 
     useEffect(() => {
         if(show){
-            setModelVisible(show)
+            register()
             setTimeout(() => {
                 slideIn()
-
             }, 100)
         } else {
             slideOut()
+            unregister()
         }
     }, [show]);
+
+    useEffect(() => {
+        if(drawerOpenCount === 0 && show){
+            onClose()
+        }
+    }, [drawerOpenCount]);
 
     const slideIn = () => {
         // Will change fadeAnim value to 1 in 5 seconds
@@ -79,11 +76,6 @@ export default function Drawer({show, onClose, children, drawerHeight = 300, foo
             duration,
             useNativeDriver: true,
         }).start();
-        Animated.timing(opacity, {
-            toValue: 1,
-            duration,
-            useNativeDriver: true,
-        }).start()
     };
 
     const slideOut = () => {
@@ -94,22 +86,9 @@ export default function Drawer({show, onClose, children, drawerHeight = 300, foo
             duration,
             useNativeDriver: true,
         }).start()
-        Animated.timing(opacity, {
-            toValue: 0,
-            duration,
-            useNativeDriver: true,
-        }).start(() => {
-            setTimeout(() => {
-                setModelVisible(false)
-            }, 100)
-        })
+
     };
     return(
-        // <Modal transparent visible={modelVisible}>
-        <View style={[styles.overlayContainer, {display: modelVisible ? 'contents' : 'none'}]}>
-            <TouchableWithoutFeedback onPress={onClose}>
-                <Animated.View style={[styles.overlay, {opacity: opacity}]}></Animated.View>
-            </TouchableWithoutFeedback>
             <Animated.View
                 style={[styles.drawerContainer, (direction === 't-b' ? styles.topDrawer : styles.bottomDrawer), {
                     translateY: translateY,
@@ -124,8 +103,6 @@ export default function Drawer({show, onClose, children, drawerHeight = 300, foo
                     </View>
                 ) : null}
             </Animated.View>
-        </View>
-        // </Modal>
     )
 }
 
