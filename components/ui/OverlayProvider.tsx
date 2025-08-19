@@ -1,10 +1,10 @@
-import {Animated, TouchableWithoutFeedback, StyleSheet,View, useAnimatedValue} from "react-native";
+import {Animated, TouchableWithoutFeedback, StyleSheet, View, useAnimatedValue, Dimensions} from "react-native";
 import {createContext, ReactNode, useState, useEffect} from "react";
 
 const styles = StyleSheet.create({
     overlayContainer: {
         position: 'absolute',
-        zIndex: 2000,
+        zIndex: 10,
         height: '100%',
         width: '100%',
     },
@@ -26,6 +26,7 @@ export const OverlayContext = createContext<OverlayContextType>({
 })
 
 export default function OverlayProvider({children}: {children: ReactNode}) {
+    const {height} = Dimensions.get('window')
     const [drawerOpenCount, setDrawerOpenCount] = useState<number>(0)
     const [modalVisible, setModalVisible] = useState<boolean>(false)
     const opacity = useAnimatedValue(0)
@@ -65,11 +66,10 @@ export default function OverlayProvider({children}: {children: ReactNode}) {
     }, [drawerOpenCount]);
     return (
         <OverlayContext.Provider value={{register, unregister, drawerOpenCount}}>
-            <View style={[styles.overlayContainer, {display: modalVisible ? 'contents' : 'none'}]}>
+            <View style={[styles.overlayContainer, {display: modalVisible ? 'flex' : 'none', height}]}>
             <TouchableWithoutFeedback onPress={onClickOverlay}>
                 <Animated.View style={[styles.overlay, {opacity: opacity}]}></Animated.View>
             </TouchableWithoutFeedback>
-
             </View>
             {children}
         </OverlayContext.Provider>

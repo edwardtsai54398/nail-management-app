@@ -24,6 +24,7 @@ export default function Components(){
                 </OverlayProvider>
             </TopFilters>
             <Button title="Open" onPress={() => setIsOpen(!isOpen)}></Button>
+            <View style={{height: '80%', backgroundColor: 'blue'}}></View>
             {/*<Drawer show={isOpen} onClose={() => {setIsOpen(false)}} footer={(<Button title="Close" onPress={() => setIsOpen(false)}></Button>)}>*/}
             {/*    <View style={{backgroundColor: 'red', height: '100%'}}></View>*/}
             {/*</Drawer>*/}
