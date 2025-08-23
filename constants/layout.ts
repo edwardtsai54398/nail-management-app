@@ -18,14 +18,16 @@ export const GRID_COLUMN = 12
 export const GRID_GAP = SPACING.md
 
 export const FONT_SIZES = {
+  xxs: 12,
   xs: 14,
   sm: 16,
   md: 18,
   lg: 20,
   xl: 24,
   xxl: 28,
-  xxxl: 30,
 };
+
+export const  MOBILE_BAR_HEIGHT = SPACING.xxl
 export const FONT_WEIGHTS = {
   regular: 'normal',
   medium: '500',

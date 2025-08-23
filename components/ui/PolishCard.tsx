@@ -6,13 +6,18 @@ import { Flex } from "../layout/Flex";
 import { ThemeText } from "../layout/ThemeText";
 
 
-export default function({data}: {data: Polish}){
+export default function PolishCard({data}: {data: Polish}){
     return(
         <View style={styles.card}>
-            <Image source={{uri: data.images[0].url}} contentFit="cover" style={styles.image}/>
-            <ThemeText size="md" style={styles.poslishName}>{data.poslishName}</ThemeText>
-            <Flex justify="end" style={styles.cardBottom}>
-                {data.isFavorites ? (<ThemeText>V</ThemeText>) : null}
+            <View style={{position: 'relative'}}>
+                <Image source={{uri: data.images[0].url}} contentFit="cover" style={styles.image}/>
+                <View style={styles.favoriteWrapper}>
+                    {data.isFavorites ? (<ThemeText>V</ThemeText>) : null}
+                </View>
+            </View>
+            <Flex style={styles.polishName} direction="column" align="center">
+                <ThemeText>{data.polishName}</ThemeText>
+                <ThemeText size="xxs" color="second">{data.polishTypeKey || data.polishTypeName}</ThemeText>
             </Flex>
         </View>
     )
@@ -24,7 +29,7 @@ const styles = StyleSheet.create({
         // borderWidth: 1,
         // borderColor: 'red'
     },
-    poslishName: {
+    polishName: {
         marginTop: SPACING.xs,
         paddingHorizontal: SPACING.sm
     },
@@ -38,4 +43,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: SPACING.sm,
         height: 24
     },
+    favoriteWrapper: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        padding: SPACING.xs
+    }
 })

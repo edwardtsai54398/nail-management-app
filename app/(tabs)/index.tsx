@@ -1,48 +1,13 @@
-import { Col, Row } from "@/components/layout/Flex";
+import { Col, Row, Flex } from "@/components/layout/Flex";
 import { ThemeText } from "@/components/layout/ThemeText";
 import PolishCard from "@/components/ui/PolishCard";
-import { GRID_GAP, SPACING } from "@/constants/layout";
+import {GRID_GAP, MOBILE_BAR_HEIGHT, SPACING} from "@/constants/layout";
 import { Polish, SectionData } from "@/types/data";
 import { useEffect, useState } from "react";
 import { SectionList, StyleSheet, View } from 'react-native';
+import {mockGetPolishItems} from "@/db/queries/polishItem";
 
-const data = [
-  {
-    title: 'Basic Mag',
-    data: [
-      {
-        polishId: '1',
-        poslishName: 'black',
-        isFavorites: true,
-        stock: 1,
-        brandName: 'Cleto',
-        seriesName: 'Basic Mag',
-        color: 'black',
-        images: [{url:'https://baseec-img-mng.akamaized.net/images/item/origin/d7a6976fa192ce8ef274b8090d5ed415.png?imformat=generic'}]
-      },
-      {
-        polishId: '2',
-        poslishName: 'white',
-        isFavorites: false,
-        stock: 1,
-        brandName: 'Cleto',
-        seriesName: 'Basic Mag',
-        color: 'white',
-        images: [{url:'https://baseec-img-mng.akamaized.net/images/item/origin/216b7ebf087767efa4afe05337448956.png?imformat=generic'}]
-      },
-      {
-        polishId: '3',
-        poslishName: 'beige',
-        isFavorites: false,
-        stock: 1,
-        brandName: 'Cleto',
-        seriesName: 'Basic Mag',
-        color: 'beige',
-        images: [{url: 'https://baseec-img-mng.akamaized.net/images/item/origin/4c0bdfaa86584b27cd8ae73676dfbc7e.png?imformat=generic'}]
-      },
-    ]
-  }
-]
+
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
   const result: T[][] = []
@@ -55,29 +20,18 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
 export default function Index() {
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   useEffect(() => {
-    const newData = data
-    const polishList = data[0].data
-    const dataLength = 20
-    let id = polishList.length
-    while(newData[0].data.length < dataLength){
-      const index = Math.floor(Math.random() * polishList.length)
-      id += 1
-      newData[0].data.push({
-        ...polishList[index],
-        polishId: `${id}`,
-      })
-    }
-    newData.push({
-      title: 'HOHO ME',
-      data: newData[0].data
+    mockGetPolishItems().then((result) => {
+      console.log(result)
+      const seriesData = result.series
+      const sectionData = seriesData.map((item, i) => ({
+        ...item,
+        data: groupInRows<Polish>(result.polishItems[i], 3)
+      }))
+
+      console.log(sectionData);
+
+      setPolishData(sectionData)
     })
-    const sectionData = newData.map(item => ({
-      ...item,
-      data: groupInRows<Polish>(item.data, 3)
-    }))
-    console.log(sectionData);
-    
-    setPolishData(sectionData)
   }, [])
   
 
@@ -88,7 +42,10 @@ export default function Index() {
         stickySectionHeadersEnabled={true}
         renderSectionHeader={({section}) => (
           <View style={styles.sectionHeader}>
-            <ThemeText type="subtitle">{section.title}</ThemeText>
+            <Flex justify="between">
+              <ThemeText type="subtitle">{section.brandName}</ThemeText>
+              <ThemeText color="second">{section.seriesName}</ThemeText>
+            </Flex>
           </View>
         )}
         renderItem={({item}) => (
@@ -109,7 +66,7 @@ export default function Index() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: SPACING.xxl,
+    paddingTop: MOBILE_BAR_HEIGHT,
     paddingHorizontal: SPACING.lg
   },
   row: {
@@ -117,7 +74,7 @@ const styles = StyleSheet.create({
     marginTop: GRID_GAP, 
   },
   sectionHeader: {
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.sm,
     backgroundColor: 'rgb(242, 242, 242)'
   }
 });
