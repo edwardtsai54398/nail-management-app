@@ -1,10 +1,21 @@
+import { ThemeText } from "@/components/layout/ThemeText";
+import { runMigrations } from "@/db/migrations";
 import { Stack } from "expo-router";
+import { Suspense  } from "react";
+import { SQLiteProvider } from 'expo-sqlite';
+import DrizzleStudio from "@/components/ui/DrizzleStudio";
+
 
 
 export default function RootLayout() {
   return(
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <Suspense fallback={<ThemeText>Loading...</ThemeText>}>
+      <SQLiteProvider databaseName="test.db" onInit={runMigrations} useSuspense>
+        <DrizzleStudio></DrizzleStudio>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </SQLiteProvider>
+    </Suspense>
   )
 }

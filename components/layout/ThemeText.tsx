@@ -1,4 +1,4 @@
-import { TEXT_COLORS, THEME_COLORS } from '@/constants/colors';
+import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors';
 import { FONT_SIZES } from '@/constants/layout';
 import { ReactNode } from "react";
 import { StyleSheet, Text, type TextProps } from 'react-native';
