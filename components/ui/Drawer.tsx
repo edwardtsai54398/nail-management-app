@@ -1,7 +1,8 @@
 import {Modal, View, ScrollView, StyleSheet, Animated, TouchableWithoutFeedback, useAnimatedValue} from 'react-native'
-import {ThemeText} from "@/components/layout/ThemeText";
-import {ReactNode, useEffect, useState} from "react";
+import {ReactNode, useEffect, useState, useContext} from "react";
 import {SPACING} from "@/constants/layout";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {OverlayContext} from "@/components/ui/OverlayProvider";
 
 interface DrawerProps {
     show: boolean
@@ -14,13 +15,10 @@ interface DrawerProps {
 
 
 const styles = StyleSheet.create({
-    overlay: {
-        height: '100%',
-        backgroundColor: 'rgba(144,144,144,0.5)'
-    },
     drawerContainer: {
         position: 'absolute',
         left: 0,
+        zIndex: 2010,
         width: '100%',
         backgroundColor: 'white',
         overflow: 'hidden',
@@ -43,22 +41,32 @@ const styles = StyleSheet.create({
     }
 })
 
-export default function TopDrawer({show, onClose, children, drawerHeight = 300, footer, direction = 't-b'}: DrawerProps) {
-    const [modelVisible, setModelVisible] = useState<boolean>(false)
-    const translateY = useAnimatedValue(drawerHeight * (direction === 't-b' ? -1 : 1))
+export default function Drawer({show, onClose, children, drawerHeight = 300, footer, direction = 't-b'}: DrawerProps) {
+    const { register, unregister, drawerOpenCount } = useContext(OverlayContext);
+    const insets = useSafeAreaInsets()
+
+    //animation
+    const extraTranslateY = (direction === 't-b' ? (insets.top * -1) : insets.bottom)
+    const translateY = useAnimatedValue(drawerHeight * (direction === 't-b' ? -1 : 1) + extraTranslateY)
     const duration = 250
 
     useEffect(() => {
         if(show){
-            setModelVisible(show)
+            register()
             setTimeout(() => {
                 slideIn()
-
             }, 100)
         } else {
             slideOut()
+            unregister()
         }
     }, [show]);
+
+    useEffect(() => {
+        if(drawerOpenCount === 0 && show){
+            onClose()
+        }
+    }, [drawerOpenCount]);
 
     const slideIn = () => {
         // Will change fadeAnim value to 1 in 5 seconds
@@ -74,27 +82,27 @@ export default function TopDrawer({show, onClose, children, drawerHeight = 300, 
         // Will change fadeAnim value to 0 in 3 seconds
         console.log('slideOut')
         Animated.timing(translateY, {
-            toValue: drawerHeight * (direction === 't-b' ? -1 : 1),
+            toValue: drawerHeight * (direction === 't-b' ? -1 : 1) + extraTranslateY,
             duration,
             useNativeDriver: true,
-        }).start(() => {
-            setTimeout(() => {
-                setModelVisible(false)
-            }, 100)
-        })
+        }).start()
+
     };
     return(
-        <Modal transparent visible={modelVisible}>
-            <TouchableWithoutFeedback onPress={onClose}>
-                <View style={styles.overlay}></View>
-            </TouchableWithoutFeedback>
-            <Animated.View style={[styles.drawerContainer, (direction === 't-b' ? styles.topDrawer : styles.bottomDrawer), {translateY: translateY, height: drawerHeight}]}>
-                <ScrollView style={styles.body}>{children}</ScrollView>
+            <Animated.View
+                style={[styles.drawerContainer, (direction === 't-b' ? styles.topDrawer : styles.bottomDrawer), {
+                    translateY: translateY,
+                    height: drawerHeight + (direction === 't-b' ? insets.top : insets.bottom),
+                }]}>
+                <View style={{height: (direction === 't-b' ? insets.top : 0)}}></View>
+                <ScrollView style={[styles.body]}>{children}</ScrollView>
                 {footer ? (
-                    <View style={styles.footer}>{footer}</View>
+                    <View style={[styles.footer]}>
+                        {footer}
+                        {direction === 'b-t' ? (<View style={{height: insets.bottom}}></View>) : null}
+                    </View>
                 ) : null}
             </Animated.View>
-        </Modal>
     )
 }
 

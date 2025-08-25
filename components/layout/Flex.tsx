@@ -9,10 +9,11 @@ const flexStyles = StyleSheet.create({
         display: 'flex'
     },
 })
+export type FlexJustify = 'end' | 'between' | 'start' | 'center' | 'around'
 
 export type FlexBoxProps = ViewProps & {
     align?: 'center' | 'end' | 'start'
-    justify?: 'end' | 'between' | 'start' | 'center' | 'around'
+    justify?: FlexJustify
     direction?: ViewStyle['flexDirection']
     children?: ReactNode
 }
