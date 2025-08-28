@@ -1,11 +1,13 @@
-import { Col, Row, Flex } from "@/components/layout/Flex";
+import { Col, Flex, Row } from "@/components/layout/Flex";
 import { ThemeText } from "@/components/layout/ThemeText";
 import PolishCard from "@/components/ui/PolishCard";
-import {GRID_GAP, MOBILE_BAR_HEIGHT, SPACING} from "@/constants/layout";
-import { Polish, SectionData } from "@/types/data";
+import { GRID_GAP, MOBILE_BAR_HEIGHT, SPACING } from "@/constants/layout";
+import usePolishApi from "@/db/queries/polishItem";
+import type { SectionData, Polish } from "@/types/data";
+import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { SectionList, StyleSheet, View } from 'react-native';
-import {mockGetPolishItems} from "@/db/queries/polishItem";
+
 
 
 
@@ -19,18 +21,20 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
 
 export default function Index() {
   const [polishSectionData, setPolishData] = useState<SectionData>([])
+  const db = useSQLiteContext();
+  const {getPolishList} = usePolishApi(db)
   useEffect(() => {
-    mockGetPolishItems().then((result) => {
-      console.log(result)
-      const seriesData = result.series
-      const sectionData = seriesData.map((item, i) => ({
-        ...item,
-        data: groupInRows<Polish>(result.polishItems[i], 3)
-      }))
 
-      console.log(sectionData);
-
-      setPolishData(sectionData)
+    getPolishList().then((result) => {
+      // console.log(result);
+      if(result.success){
+        
+        const sectionData = result.data.series.map((s, i) => ({
+          ...s,
+          data: groupInRows<Polish>(result.data.polishItems[i], 3)
+        }))
+        setPolishData(sectionData)
+      }
     })
   }, [])
   

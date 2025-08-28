@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import { type SQLiteDatabase } from 'expo-sqlite';
 import {
+  ColumnBlueprint,
   generateCreateTable,
   oBrandsTableBlueprint,
   oColorTypesTableBlueprint,
@@ -9,6 +10,7 @@ import {
   polishImagesTableBlueprint,
   polishItemsColorsTableBlueprint,
   polishItemTagsTableBlueprint,
+  Tables,
   uBrandsTableBlueprint,
   uPolishItemsTableBlueprint,
   uPolishSeriesTableBlueprint,
@@ -17,27 +19,6 @@ import {
   userTableBlueprint,
   uTagsTableBlueprint
 } from './schema';
-
-const foreignKeySql = () => {
-  const constraints: string[] = [];
-
-  const api = {
-    bind(column: string) {
-      return {
-        to(refTable: string, refColumn: string) {
-          constraints.push(`FOREIGN KEY (${column}) REFERENCES ${refTable}(${refColumn})`);
-          return api; // 回到 api，支援鏈式呼叫
-        }
-      };
-    },
-    toString() {
-      return constraints.join(", ");
-    }
-  };
-
-  return api;
-} 
-
 
 export async function runMigrations(db: SQLiteDatabase) {
   console.log('runMigrations');
