@@ -3,7 +3,7 @@ type TypeToSQLite<T> =
   T extends number ? "INTEGER" :
   never;
 
-interface ColumnBlueprint {
+export interface ColumnBlueprint {
     type: "TEXT" | "INTEGER";
     primaryKey?: boolean;
     notNull?: boolean
@@ -58,9 +58,6 @@ export const generateCreateTable = <T extends keyof Tables>(tableName: T, bluepr
     return str
   })
   const allDefs = [...columnsSql, ...foreignKeySql]
-  console.log(`${tableName} Table generate`);
-  console.log(`CREATE TABLE IF NOT EXISTS ${tableName} (${allDefs.join(', ')});`);
-  
   
   return `CREATE TABLE IF NOT EXISTS ${tableName} (${allDefs.join(', ')});`
 }
@@ -94,7 +91,7 @@ export const uPolishItemsTableBlueprint: TableBlueprint<UserPolishItemsSchema> =
   official_polish_id: {type: "TEXT", foreignKey: {table: 'official_polish_items', column: 'polish_id', onDelete: 'SET NULL'}},
   user_color_number: {type: "TEXT", notNull: true},
   series_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_polish_series', column: 'series_id', onDelete: 'SET NULL'}},
-  polish_type_id: {type: 'TEXT', foreignKey: {table: 'user_polish_types', column: 'polish_type_id', onDelete: 'SET NULL'}},
+  polish_type_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_polish_types', column: 'polish_type_id'}},
   note: {type: 'TEXT'},
   stock: {type: "INTEGER", notNull: true},
   is_favorite: {type: "INTEGER", default: 0},
@@ -279,7 +276,7 @@ export const oColorTypesTableBlueprint: TableBlueprint<OfficialColorTypesSchema>
   color_type: {type: 'TEXT', notNull: true}
 }
 
-interface Tables {
+export interface Tables {
   users: UserSchema
   user_polish_items: UserPolishItemsSchema
   polish_images: PolishImagesSchema

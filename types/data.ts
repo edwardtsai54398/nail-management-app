@@ -1,4 +1,5 @@
 export type PolishImage = {
+    order: number
     url: string
 }
 export type Polish = {
@@ -11,9 +12,12 @@ export type Polish = {
     seriesId?: string
     seriesName: string
     colors: string[]
+    note: string
     images: PolishImage[]
-    polishTypeKey: string,
-    polishTypeName: string,
+    polishType: {
+        name: string
+    },
+    tags: string[]
 }
 
 export type SeriesData = {
@@ -25,3 +29,7 @@ export type SeriesData = {
 
 
 export type SectionData =(SeriesData & {data: Polish[][]})[]
+
+export type QueryResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };

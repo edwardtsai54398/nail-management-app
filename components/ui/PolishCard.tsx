@@ -10,14 +10,14 @@ export default function PolishCard({data}: {data: Polish}){
     return(
         <View style={styles.card}>
             <View style={{position: 'relative'}}>
-                <Image source={{uri: data.images[0].url}} contentFit="cover" style={styles.image}/>
+                <Image source={{uri: data.images[0]?.url}} contentFit="cover" style={styles.image}/>
                 <View style={styles.favoriteWrapper}>
                     {data.isFavorites ? (<ThemeText>V</ThemeText>) : null}
                 </View>
             </View>
             <Flex style={styles.polishName} direction="column" align="center">
                 <ThemeText>{data.polishName}</ThemeText>
-                <ThemeText size="xxs" color="second">{data.polishTypeKey || data.polishTypeName}</ThemeText>
+                <ThemeText size="xxs" color="second">{ data.polishType?.name || '' }</ThemeText>
             </Flex>
         </View>
     )
