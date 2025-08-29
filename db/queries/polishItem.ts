@@ -1,7 +1,7 @@
-import {type Polish, SeriesData} from "@/types/data";
+import {type Polish, Series} from "@/types/ui";
 
 type PolishListResult = {
-    series: SeriesData[]
+    series: Series[]
     polishItems: Polish[][]
 }
 export async function mockGetPolishItems(){

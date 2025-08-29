@@ -16,7 +16,7 @@ export type Polish = {
     polishTypeName: string,
 }
 
-export type SeriesData = {
+export type Series = {
     brandId: string,
     brandName: string,
     seriesId: string
@@ -24,4 +24,9 @@ export type SeriesData = {
 }
 
 
-export type SectionData =(SeriesData & {data: Polish[][]})[]
+export type SectionData =(Series & {data: Polish[][]})[]
+
+export type Brand = {
+    brandId: string
+    brandName: string
+}

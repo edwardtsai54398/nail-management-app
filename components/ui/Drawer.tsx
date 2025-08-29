@@ -1,10 +1,10 @@
 import {Modal, View, ScrollView, StyleSheet, Animated, TouchableWithoutFeedback, useAnimatedValue} from 'react-native'
-import {ReactNode, useEffect, useState, useContext} from "react";
+import {ReactNode, useEffect, useState, useContext, useMemo} from "react";
 import {SPACING} from "@/constants/layout";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {OverlayContext} from "@/components/ui/OverlayProvider";
 
-interface DrawerProps {
+export type DrawerProps = {
     show: boolean
     children: ReactNode
     drawerHeight?: number
@@ -14,7 +14,7 @@ interface DrawerProps {
 }
 
 
-const styles = StyleSheet.create({
+export const drawerStyles = StyleSheet.create({
     drawerContainer: {
         position: 'absolute',
         left: 0,
@@ -46,7 +46,7 @@ export default function Drawer({show, onClose, children, drawerHeight = 300, foo
     const insets = useSafeAreaInsets()
 
     //animation
-    const extraTranslateY = (direction === 't-b' ? (insets.top * -1) : insets.bottom)
+    const extraTranslateY = useMemo(() => direction === 't-b' ? (insets.top * -1) : insets.bottom, [direction])
     const translateY = useAnimatedValue(drawerHeight * (direction === 't-b' ? -1 : 1) + extraTranslateY)
     const duration = 250
 
@@ -90,14 +90,14 @@ export default function Drawer({show, onClose, children, drawerHeight = 300, foo
     };
     return(
             <Animated.View
-                style={[styles.drawerContainer, (direction === 't-b' ? styles.topDrawer : styles.bottomDrawer), {
+                style={[drawerStyles.drawerContainer, (direction === 't-b' ? drawerStyles.topDrawer : drawerStyles.bottomDrawer), {
                     translateY: translateY,
                     height: drawerHeight + (direction === 't-b' ? insets.top : insets.bottom),
                 }]}>
                 <View style={{height: (direction === 't-b' ? insets.top : 0)}}></View>
-                <ScrollView style={[styles.body]}>{children}</ScrollView>
+                <ScrollView style={[drawerStyles.body]}>{children}</ScrollView>
                 {footer ? (
-                    <View style={[styles.footer]}>
+                    <View style={[drawerStyles.footer]}>
                         {footer}
                         {direction === 'b-t' ? (<View style={{height: insets.bottom}}></View>) : null}
                     </View>
