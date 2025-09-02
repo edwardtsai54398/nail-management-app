@@ -18,7 +18,8 @@ export default function AddPolish() {
     const params = useGlobalSearchParams<ParamsFromSelection>()
     const initValues:PolishFormValues = {
         brandId: '',
-        seriesId: ''
+        seriesId: '',
+        colorName: ''
     }
 
     const formRef = useRef<PolishFormRef>(null)
@@ -34,6 +35,13 @@ export default function AddPolish() {
             formRef.current.setValue('seriesId', params.seriesId)
         }
     }, [params]);
+
+    const handleSaveClick = () => {
+        if(!formRef.current) return
+        const values = formRef.current.getValues()
+        console.log('handleSaveClick')
+        console.log(values)
+    }
     return (
         <>
             <Stack.Screen
@@ -42,19 +50,13 @@ export default function AddPolish() {
                     headerTitleAlign: 'center',
                     headerTitle: '建立色膠',
                     headerLeft: (props) => <ThemeButton icon={<AntDesign name="close" size={26} />} type="default" text onPress={() => navigation.goBack()} />,
-                    headerRight: () => <ThemeButton label="儲存" text />,
+                    headerRight: () => <ThemeButton label="儲存" text onPress={handleSaveClick} />,
                     headerBackVisible: false
                 }}
             />
 
             <ScrollView style={styles.container}>
                 <PolishForm ref={formRef} initValues={initValues} />
-                {/*<View style={styles.card}>*/}
-                {/*    <DetailInput label="品牌" type="select" border="bottom" value={brand} />*/}
-                {/*    <DetailInput label="系列" type="select" border="bottom" value={series} />*/}
-                {/*    <DetailInput label="色號" type="input" border="bottom" value={colorName} onChangeValue={setColorName} placeholder="輸入色號" onFocus={() => {*/}
-                {/*        console.log('onFocus')}} />*/}
-                {/*</View>*/}
             </ScrollView>
         </>
     )

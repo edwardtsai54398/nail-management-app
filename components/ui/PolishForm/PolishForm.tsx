@@ -6,6 +6,7 @@ import {LINE_COLORS} from "@/constants/Colors";
 import BrandInput from "./BrandInput";
 import type {PolishColumnRef, PolishFormValues, PolishFormRef} from "./types";
 import SeriesInput from "@/components/ui/PolishForm/SeriesInput";
+import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
 
 
 
@@ -21,16 +22,19 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
     const brandIdRef = useRef('')
     const brandRef = useRef<PolishColumnRef<string>>(null)
     const seriesRef = useRef<PolishColumnRef<string>>(null)
+    const coloNameRef = useRef<PolishColumnRef<string>>(null)
 
     const handleBrandInputChange = useCallback((brandId: string) => {
         // console.log('BrandInput Change', brandId)
         brandIdRef.current = brandId
     }, [brandIdRef])
 
+
     useImperativeHandle(ref, () => ({
         getValues: () => ({
             brandId: brandRef.current?.getValue() || '',
             seriesId: seriesRef.current?.getValue() || '',
+            colorName: coloNameRef.current?.getValue() || ''
         }),
         setValue: (key, val) => {
             switch (key) {
@@ -39,6 +43,10 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
                     break
                 case 'seriesId':
                     seriesRef.current?.setValue(val)
+                    break
+                case 'colorName':
+                    coloNameRef.current?.setValue(val)
+                    break
             }
         }
     }))
@@ -47,6 +55,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
         <View style={styles.card}>
             <BrandInput ref={brandRef} val={initValRef.current.brandId} onChange={handleBrandInputChange} />
             <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
+            <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
         </View>
     )
 })

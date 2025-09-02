@@ -1,7 +1,7 @@
 export type PolishFormValues = {
     brandId: string
     seriesId: string
-    // colorName: string
+    colorName: string
 }
 
 
