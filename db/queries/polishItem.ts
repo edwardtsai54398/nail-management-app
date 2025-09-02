@@ -1,8 +1,8 @@
-import { type Polish, SeriesData, QueryResult } from "@/types/data";
 import { SQLiteDatabase } from "expo-sqlite";
+import {type Polish, Series, QueryResult} from "@/types/ui";
 
 type PolishListResult = {
-    series: SeriesData[]
+    series: Series[]
     polishItems: Polish[][]
 }
 
@@ -60,7 +60,7 @@ export default function(db: SQLiteDatabase) {
         
         try {
             const rows = await db.getAllAsync<PolishQueryRow>(sql)
-            const seriesMap = new Map<string, SeriesData>([])
+            const seriesMap = new Map<string, Series>([])
             const polishItemsGroupBySeries = new Map<string, Polish[]>([])
             for(const row of rows) {
                 if(!seriesMap.has(row.series_id)) {

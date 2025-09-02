@@ -20,7 +20,7 @@ export type Polish = {
     tags: string[]
 }
 
-export type SeriesData = {
+export type Series = {
     brandId: string,
     brandName: string,
     seriesId: string
@@ -28,8 +28,13 @@ export type SeriesData = {
 }
 
 
-export type SectionData =(SeriesData & {data: Polish[][]})[]
 
 export type QueryResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
+export type SectionData =(Series & {data: Polish[][]})[]
+
+export type Brand = {
+    brandId: string
+    brandName: string
+}

@@ -1,5 +1,5 @@
 import { SPACING } from "@/constants/layout";
-import { Polish } from "@/types/data";
+import { Polish } from "@/types/ui";
 import { Image } from 'expo-image';
 import { StyleSheet, View } from "react-native";
 import { Flex } from "../layout/Flex";

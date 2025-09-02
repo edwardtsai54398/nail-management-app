@@ -1,14 +1,19 @@
 import { Col, Flex, Row } from "@/components/layout/Flex";
 import { ThemeText } from "@/components/layout/ThemeText";
 import PolishCard from "@/components/ui/PolishCard";
-import { GRID_GAP, MOBILE_BAR_HEIGHT, SPACING } from "@/constants/layout";
 import usePolishApi from "@/db/queries/polishItem";
-import type { SectionData, Polish } from "@/types/data";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useState } from "react";
+import {FONT_SIZES, GRID_GAP, MOBILE_BAR_HEIGHT, SPACING} from "@/constants/layout";
+import { Polish, SectionData, Brand } from "@/types/ui";
+import { useEffect, useState, useRef } from "react";
 import { SectionList, StyleSheet, View } from 'react-native';
-
-
+import {getBrands} from "@/db/queries/brand";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import FloatingBtn from "@/components/ui/FloatingBtn";
+import {useRouter} from "expo-router";
+import {useBrandStore} from "@/store/brands";
+import {useSeriesStore} from "@/store/series";
 
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
@@ -20,6 +25,10 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
 }
 
 export default function Index() {
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const setBrandsState = useBrandStore((state) => state.setData)
+  const setSeriesState = useSeriesStore(state => state.setData)
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext();
   const {getPolishList} = usePolishApi(db)
@@ -34,13 +43,18 @@ export default function Index() {
           data: groupInRows<Polish>(result.data.polishItems[i], 3)
         }))
         setPolishData(sectionData)
+          setSeriesState(result.data.series)
       }
+
+
+    })
+    getBrands().then((result) => {
+      setBrandsState(result.data)
     })
   }, [])
-  
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
       <SectionList
         sections={polishSectionData}
         stickySectionHeadersEnabled={true}
@@ -63,15 +77,16 @@ export default function Index() {
             </Row>
           </View>
         )}
+        style={{marginBottom: SPACING.lg}}
       ></SectionList>
+      <FloatingBtn onPress={() => {router.navigate('/add-polish')}}><AntDesign name="plus" size={FONT_SIZES.xl} /></FloatingBtn>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: MOBILE_BAR_HEIGHT,
-    paddingHorizontal: SPACING.lg
+    paddingHorizontal: SPACING.lg,
   },
   row: {
     width: '100%',

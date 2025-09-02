@@ -6,7 +6,6 @@ import {ThemeText} from "@/components/layout/ThemeText";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {SPACING} from "@/constants/layout";
 import {TEXT_COLORS, THEME_COLORS} from "@/constants/Colors";
-import {AnimatedText} from "react-native-reanimated/lib/typescript/component/Text";
 
 const styles = StyleSheet.create({
     filterButton: {
