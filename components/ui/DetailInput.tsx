@@ -3,7 +3,7 @@ import {ThemeText} from "@/components/layout/ThemeText";
 import {Pressable, StyleSheet, TextInput, View} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {SPACING} from "@/constants/layout";
-import {LINE_COLORS} from "@/constants/Colors";
+import {LINE_COLORS, TEXT_COLORS} from "@/constants/Colors";
 import {useRef, memo} from "react";
 
 type BaseProps = {
@@ -46,7 +46,7 @@ const DetailInput = memo(({value, label, type = 'select', onSelectPress, onFocus
                     type === 'select' ? (
                         <Flex>
                             {value ? <ThemeText>{value}</ThemeText> : <ThemeText color="subtle">{placeholder}</ThemeText>}
-                            <AntDesign name="right" size={20} style={{marginLeft: SPACING.sm}} />
+                            <AntDesign name="right" size={20} style={{marginLeft: SPACING.sm, color: TEXT_COLORS.second}} />
                         </Flex>
                     ) : (
                         <TextInput
@@ -75,11 +75,11 @@ const styles = StyleSheet.create({
     },
     borderTop: {
         borderTopWidth: 1,
-        borderColor: LINE_COLORS.default
+        borderColor: LINE_COLORS.second
     },
     borderBottom: {
         borderBottomWidth: 1,
-        borderColor: LINE_COLORS.default
+        borderColor: LINE_COLORS.second
     },
     input: {
         paddingRight: SPACING.xl

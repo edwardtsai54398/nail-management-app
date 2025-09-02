@@ -1,9 +1,9 @@
-import {Pressable, ScrollView, StyleSheet} from "react-native";
+import {Pressable, ScrollView, StyleSheet, View} from "react-native";
 import {Flex} from "@/components/layout/Flex";
 import {ThemeText} from "@/components/layout/ThemeText";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {LINE_COLORS, THEME_COLORS} from "@/constants/Colors";
-import {forwardRef, useCallback, useImperativeHandle, useState, memo} from "react";
+import {forwardRef, useCallback, useImperativeHandle, useState, memo, ReactNode} from "react";
 import {SPACING} from "@/constants/layout";
 import type {Brand} from "@/types/ui";
 
@@ -12,6 +12,7 @@ type SelectListProps = {
     uniqueKey: string
     displayKey: string
     onChange?: (value: string) => void
+    noData?: ReactNode
 }
 
 export type SelectListRef = {
@@ -20,7 +21,7 @@ export type SelectListRef = {
 }
 
 const SelectList = forwardRef<SelectListRef, SelectListProps>((
-    {data, uniqueKey, displayKey, onChange},
+    {data, uniqueKey, displayKey, onChange, noData},
     ref
 ) => {
     const [idSelected, setIdSelected] = useState<string>('');
@@ -35,18 +36,24 @@ const SelectList = forwardRef<SelectListRef, SelectListProps>((
     }))
     return (
         <ScrollView>
-            {data.map((item) => (
-                <Pressable key={item[uniqueKey]} onPress={() => {handlePress(item)}}>
-                    <Flex justify="between" style={styles.li}>
-                        <ThemeText>{item[displayKey]}</ThemeText>
-                        {
-                            idSelected === item[uniqueKey] ? (
-                                <AntDesign name={'check'} size={20} style={{color: THEME_COLORS.primary}}/>
-                            ) : null
-                        }
-                    </Flex>
-                </Pressable>
-            ))}
+            {
+                data.length ?
+                data.map((item) => (
+                    <Pressable key={item[uniqueKey]} onPress={() => {handlePress(item)}}>
+                        <Flex justify="between" style={styles.li}>
+                            <ThemeText>{item[displayKey]}</ThemeText>
+                            {
+                                idSelected === item[uniqueKey] ? (
+                                    <AntDesign name={'check'} size={20} style={{color: THEME_COLORS.primary}}/>
+                                ) : null
+                            }
+                        </Flex>
+                    </Pressable>
+                )) :
+                <Flex justify={'center'} style={{paddingVertical: SPACING.lg}}>
+                    {noData || (<ThemeText size={'md'} color={'second'}>沒有資料</ThemeText>)}
+                </Flex>
+            }
         </ScrollView>
     )
 })

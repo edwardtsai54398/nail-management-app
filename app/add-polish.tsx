@@ -38,6 +38,7 @@ export default function AddPolish() {
         <>
             <Stack.Screen
                 options={{
+                    presentation: 'modal',
                     headerTitleAlign: 'center',
                     headerTitle: '建立色膠',
                     headerLeft: (props) => <ThemeButton icon={<AntDesign name="close" size={26} />} type="default" text onPress={() => navigation.goBack()} />,
@@ -63,13 +64,5 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: SPACING.sm,
         paddingVertical: SPACING.md
-    },
-    card: {
-        borderRadius: SPACING.lg,
-        borderColor: LINE_COLORS.second,
-        paddingHorizontal: SPACING.md,
-        paddingTop: 0,
-        paddingBottom: SPACING.md,
-        backgroundColor: 'white'
     }
 })

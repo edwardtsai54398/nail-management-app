@@ -6,13 +6,21 @@ import {ParamsToSeriesSelect} from "@/types/routes";
 import SelectList, {SelectListRef} from "@/components/ui/SelectList";
 import ThemeButton from "@/components/ui/ThemeButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import {Flex} from "@/components/layout/Flex";
+import {SPACING} from "@/constants/layout";
+import {TextInput} from "react-native";
+import {uiStyles} from "@/assets/styles/ui";
+import {addSeries} from "@/db/queries/series";
 
 export default function SeriesSelect() {
     const router = useRouter();
     const params = useGlobalSearchParams<ParamsToSeriesSelect>()
     const selectListRef = useRef<SelectListRef>(null)
     const seriesMap = useSeriesStore(state => state.seriesMap)
+    const addSeriesData = useSeriesStore(state => state.addData)
     const [seriesList, setSeriesList] = useState<Series[]>([])
+    const [isAddSeriesMode, setIsAddSeriesMode] = useState(false);
+    const [addSeriesText, setAddSeriesText] = useState<string>('');
 
     useEffect(() => {
         if(!params.brandId) return
@@ -38,6 +46,27 @@ export default function SeriesSelect() {
             router.setParams({seriesId})
         }
     }, [])
+
+    const handleCancelPress = () => {
+        setIsAddSeriesMode(false);
+        setAddSeriesText('')
+    }
+
+    const handleFinishPress = async () => {
+        try {
+            const response = await addSeries(params.brandId, addSeriesText)
+            if(!response.success) return
+            const {data} = response
+            addSeriesData(data.brandId, [data])
+            if(selectListRef.current) {
+                selectListRef.current.setId(data.seriesId)
+            }
+            setIsAddSeriesMode(false);
+            setAddSeriesText('')
+        } catch (e) {
+
+        }
+    }
     return (
         <>
             <Stack.Screen
@@ -45,10 +74,23 @@ export default function SeriesSelect() {
                     headerTitleAlign: 'center',
                     headerTitle: '選擇系列',
                     headerLeft: (props) => <ThemeButton icon={<AntDesign name="left" size={16} />} label={'返回'} type="default" text onPress={handleGoBack} />,
-                    headerRight: () => <ThemeButton label="完成" text />,
+                    headerRight: () => (!isAddSeriesMode ? <ThemeButton label="新增系列" text onPress={() => {setIsAddSeriesMode(true)}} /> : <ThemeButton label="取消" text onPress={handleCancelPress} />),
                     headerBackVisible: false
                 }}
             />
+            {isAddSeriesMode ? (
+                <Flex style={{padding: SPACING.sm}}>
+                    <TextInput
+                        autoFocus={true}
+                        maxLength={25}
+                        numberOfLines={1}
+                        onChangeText={(val) => {setAddSeriesText(val)}}
+                        placeholder={'輸入系列名稱'}
+                        style={[uiStyles.input, {flexGrow: 1, marginRight: SPACING.sm}]}
+                    />
+                    <ThemeButton text label={'完成'} disabled={(addSeriesText === '')} onPress={handleFinishPress} />
+                </Flex>
+            ) : null}
             <SelectList ref={selectListRef} data={seriesList} uniqueKey={'seriesId'} displayKey={'seriesName'} />
         </>
     )

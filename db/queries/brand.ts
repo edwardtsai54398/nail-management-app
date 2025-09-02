@@ -14,3 +14,13 @@ export async function getBrands(): Promise<{data: Brand[]}> {
         }))
     }
 }
+
+export async function addBrand(brandName: string): Promise<{data: Brand, success: boolean}> {
+    return {
+        success: true,
+        data: {
+            brandId: '001',
+            brandName,
+        }
+    }
+}
