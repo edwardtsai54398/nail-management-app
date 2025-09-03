@@ -1,10 +1,11 @@
-import {PolishType} from "@/types/ui";
+import {Polish, PolishType} from "@/types/ui";
 
 export type PolishFormValues = {
     brandId: string
     seriesId: string
     colorName: string
     polishType: PolishType | null
+    colors: Pick<Polish, 'colors'>['colors']
 }
 
 

@@ -9,6 +9,7 @@ import SeriesInput from "@/components/ui/PolishForm/SeriesInput";
 import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
 import PolishTypesSelector from "@/components/ui/PolishForm/PolishTypesSelector";
 import {PolishType} from "@/types/ui";
+import ColorSelector from "@/components/ui/PolishForm/ColorSelector";
 
 
 
@@ -26,6 +27,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
     const seriesRef = useRef<PolishColumnRef<string>>(null)
     const coloNameRef = useRef<PolishColumnRef<string>>(null)
     const polishTypesRef = useRef<PolishColumnRef<PolishType | null>>(null)
+    const colorSelectorRef = useRef<PolishColumnRef<string[]>>(null)
 
     const handleBrandInputChange = useCallback((brandId: string) => {
         // console.log('BrandInput Change', brandId)
@@ -38,7 +40,8 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             brandId: brandRef.current?.getValue() || '',
             seriesId: seriesRef.current?.getValue() || '',
             colorName: coloNameRef.current?.getValue() || '',
-            polishType: polishTypesRef.current?.getValue() || null
+            polishType: polishTypesRef.current?.getValue() || null,
+            colors: colorSelectorRef.current?.getValue() || []
         }),
         setValue: (key, val) => {
             switch (key) {
@@ -64,6 +67,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
             <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
             <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType}/>
+            <ColorSelector ref={colorSelectorRef} values={initValRef.current.colors}/>
         </View>
     )
 })
