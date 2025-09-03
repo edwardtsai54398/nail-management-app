@@ -87,6 +87,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: SPACING.lg,
+    height: '100%'
   },
   row: {
     width: '100%',

@@ -7,6 +7,7 @@ import BrandInput from "./BrandInput";
 import type {PolishColumnRef, PolishFormValues, PolishFormRef} from "./types";
 import SeriesInput from "@/components/ui/PolishForm/SeriesInput";
 import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
+import PolishTypesSelector from "@/components/ui/PolishForm/PolishTypesSelector";
 
 
 
@@ -56,6 +57,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             <BrandInput ref={brandRef} val={initValRef.current.brandId} onChange={handleBrandInputChange} />
             <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
             <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
+            <PolishTypesSelector/>
         </View>
     )
 })

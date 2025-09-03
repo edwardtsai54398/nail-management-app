@@ -2,6 +2,13 @@ export type PolishImage = {
     order: number
     url: string
 }
+
+export type PolishType = {
+    typeId: string
+    name: string
+    isOfficial: boolean
+}
+
 export type Polish = {
     polishId: string
     polishName: string
@@ -14,9 +21,7 @@ export type Polish = {
     colors: string[]
     note: string
     images: PolishImage[]
-    polishType: {
-        name: string
-    },
+    polishType: PolishType,
     tags: string[]
 }
 
