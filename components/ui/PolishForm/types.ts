@@ -1,7 +1,10 @@
+import {PolishType} from "@/types/ui";
+
 export type PolishFormValues = {
     brandId: string
     seriesId: string
     colorName: string
+    polishType: PolishType | null
 }
 
 

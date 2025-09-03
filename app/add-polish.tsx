@@ -19,7 +19,8 @@ export default function AddPolish() {
     const initValues:PolishFormValues = {
         brandId: '',
         seriesId: '',
-        colorName: ''
+        colorName: '',
+        polishType: null
     }
 
     const formRef = useRef<PolishFormRef>(null)

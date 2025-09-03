@@ -8,6 +8,7 @@ import type {PolishColumnRef, PolishFormValues, PolishFormRef} from "./types";
 import SeriesInput from "@/components/ui/PolishForm/SeriesInput";
 import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
 import PolishTypesSelector from "@/components/ui/PolishForm/PolishTypesSelector";
+import {PolishType} from "@/types/ui";
 
 
 
@@ -24,6 +25,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
     const brandRef = useRef<PolishColumnRef<string>>(null)
     const seriesRef = useRef<PolishColumnRef<string>>(null)
     const coloNameRef = useRef<PolishColumnRef<string>>(null)
+    const polishTypesRef = useRef<PolishColumnRef<PolishType | null>>(null)
 
     const handleBrandInputChange = useCallback((brandId: string) => {
         // console.log('BrandInput Change', brandId)
@@ -35,18 +37,22 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
         getValues: () => ({
             brandId: brandRef.current?.getValue() || '',
             seriesId: seriesRef.current?.getValue() || '',
-            colorName: coloNameRef.current?.getValue() || ''
+            colorName: coloNameRef.current?.getValue() || '',
+            polishType: polishTypesRef.current?.getValue() || null
         }),
         setValue: (key, val) => {
             switch (key) {
                 case "brandId":
-                    brandRef.current?.setValue(val)
+                    brandRef.current?.setValue(val as string)
                     break
                 case 'seriesId':
-                    seriesRef.current?.setValue(val)
+                    seriesRef.current?.setValue(val as string)
                     break
                 case 'colorName':
-                    coloNameRef.current?.setValue(val)
+                    coloNameRef.current?.setValue(val as string)
+                    break
+                case 'polishType':
+                    polishTypesRef.current?.setValue(val as PolishType)
                     break
             }
         }
@@ -57,7 +63,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             <BrandInput ref={brandRef} val={initValRef.current.brandId} onChange={handleBrandInputChange} />
             <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
             <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
-            <PolishTypesSelector/>
+            <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType}/>
         </View>
     )
 })

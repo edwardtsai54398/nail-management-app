@@ -6,13 +6,18 @@ import {Flex} from "@/components/layout/Flex";
 import type {PolishType} from "@/types/ui";
 import ThemeButton from "@/components/ui/ThemeButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {useCallback, useState} from "react";
+import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
 import {uiStyles} from "@/assets/styles/ui";
 import usePolishTypesApi from '@/db/queries/polishTypes'
 import {useSQLiteContext} from "expo-sqlite";
 import {LINE_COLORS} from "@/constants/Colors";
+import {PolishColumnRef} from "@/components/ui/PolishForm/types";
 
-const PolishTypesSelector = () => {
+type TypesSelectorProps = {
+    val: PolishType | null
+}
+
+const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, TypesSelectorProps>((props, ref) => {
     const data: PolishType[] = [
         {typeId: '1', name: '暈染液', isOfficial: true},
         {typeId: '2', name: '貓眼', isOfficial: true},
@@ -27,7 +32,7 @@ const PolishTypesSelector = () => {
     const [polishTypes, setPolishTypes] = useState<PolishType[]>(data)
     const [isAddMode, setIsAddMode] = useState<boolean>(false)
     const [customPolishTypeName, setCustomPolishTypeName] = useState<string>('')
-    const [typeSelected, setTypeSelected] = useState<PolishType | null>(null)
+    const [typeSelected, setTypeSelected] = useState<PolishType | null>(props.val)
 
     const handleTagPress = useCallback((item: PolishType) => {
         console.log('handleTagPress', item)
@@ -45,18 +50,25 @@ const PolishTypesSelector = () => {
             const response = await addPolishType(customPolishTypeName)
             if(!response.success) return
             setPolishTypes(prev => [...prev, response.data])
+            setTypeSelected(response.data)
         } finally {
             setIsAddMode(false)
             setCustomPolishTypeName('')
         }
     }
+
+    useImperativeHandle(ref, () => ({
+        getValue: () => typeSelected,
+        setValue: (val) => setTypeSelected(val)
+    }))
+
     return (
         <View style={styles.container}>
             <Flex justify={'between'}>
                 <ThemeText>色膠種類</ThemeText>
                 {isAddMode ?
                     <ThemeButton type={'primary'} text label={'完成'} disabled={(customPolishTypeName === '')} onPress={handleFinishPress}/>
-                     :
+                    :
                     <ThemeButton
                         type={'default'} text
                         icon={<AntDesign name={'pluscircleo'} size={18}/>}
@@ -86,7 +98,7 @@ const PolishTypesSelector = () => {
             }
         </View>
     )
-}
+})
 
 const styles = StyleSheet.create({
     container: {
@@ -97,5 +109,6 @@ const styles = StyleSheet.create({
         borderColor: LINE_COLORS.second
     },
 })
+PolishTypesSelector.displayName = 'PolishTypesSelector'
 
 export default PolishTypesSelector
