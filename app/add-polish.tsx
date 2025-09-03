@@ -21,7 +21,9 @@ export default function AddPolish() {
         seriesId: '',
         colorName: '',
         polishType: null,
-        colors: []
+        colors: [],
+        stock: 1,
+        isFavorites: false
     }
 
     const formRef = useRef<PolishFormRef>(null)

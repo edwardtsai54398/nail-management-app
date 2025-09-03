@@ -10,6 +10,9 @@ import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
 import PolishTypesSelector from "@/components/ui/PolishForm/PolishTypesSelector";
 import {PolishType} from "@/types/ui";
 import ColorSelector from "@/components/ui/PolishForm/ColorSelector";
+import {Row, Col} from "@/components/layout/Flex";
+import StockCounter from "@/components/ui/PolishForm/StockCounter";
+import Favorites from "@/components/ui/PolishForm/Favorite";
 
 
 
@@ -28,6 +31,8 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
     const coloNameRef = useRef<PolishColumnRef<string>>(null)
     const polishTypesRef = useRef<PolishColumnRef<PolishType | null>>(null)
     const colorSelectorRef = useRef<PolishColumnRef<string[]>>(null)
+    const stockRef = useRef<PolishColumnRef<number>>(null)
+    const favoritesRef = useRef<PolishColumnRef<boolean>>(null)
 
     const handleBrandInputChange = useCallback((brandId: string) => {
         // console.log('BrandInput Change', brandId)
@@ -41,7 +46,9 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             seriesId: seriesRef.current?.getValue() || '',
             colorName: coloNameRef.current?.getValue() || '',
             polishType: polishTypesRef.current?.getValue() || null,
-            colors: colorSelectorRef.current?.getValue() || []
+            colors: colorSelectorRef.current?.getValue() || [],
+            stock: stockRef.current?.getValue() || 0,
+            isFavorites: favoritesRef.current?.getValue() || false
         }),
         setValue: (key, val) => {
             switch (key) {
@@ -68,6 +75,16 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
             <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType}/>
             <ColorSelector ref={colorSelectorRef} values={initValRef.current.colors}/>
+            <View style={styles.stockFavoriteWrapper}>
+                <Row>
+                    <Col base={7} style={styles.stockWrapper}>
+                        <StockCounter ref={stockRef} val={initValRef.current.stock}/>
+                    </Col>
+                    <Col base={5}>
+                        <Favorites ref={favoritesRef} val={initValRef.current.isFavorites}/>
+                    </Col>
+                </Row>
+            </View>
         </View>
     )
 })
@@ -81,6 +98,16 @@ const styles = StyleSheet.create({
         paddingTop: 0,
         paddingBottom: SPACING.md,
         backgroundColor: 'white'
+    },
+    stockFavoriteWrapper: {
+        borderBottomWidth: 1,
+        borderColor: LINE_COLORS.second,
+        paddingVertical: SPACING.xs,
+        paddingHorizontal: SPACING.md
+    },
+    stockWrapper: {
+        borderRightWidth: 1,
+        borderColor: LINE_COLORS.second,
     }
 })
 

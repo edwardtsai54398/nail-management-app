@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useState, memo} from "react";
 import {StyleSheet, View} from "react-native";
 import {PolishColumnRef} from "@/components/ui/PolishForm/types";
 import {useSQLiteContext} from "expo-sqlite";
@@ -6,8 +6,6 @@ import useColorsApi from '@/db/queries/colors'
 import {SPACING} from "@/constants/layout";
 import {LINE_COLORS} from "@/constants/Colors";
 import {ThemeText} from "@/components/layout/ThemeText";
-import ThemeButton from "@/components/ui/ThemeButton";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import {Flex} from "@/components/layout/Flex";
 import TagSelector from "@/components/ui/TagSelector";
 
@@ -76,4 +74,4 @@ const styles = StyleSheet.create({
 })
 
 ColorSelector.displayName = 'ColorSelector'
-export default ColorSelector
+export default memo(ColorSelector)

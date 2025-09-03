@@ -30,16 +30,18 @@ export  default function ThemeButton({label, plain, text, icon, iconAlign = 'lef
             color: (text || plain) ? ( type === 'default' ? TEXT_COLORS.default : THEME_COLORS[type]) : 'white'
         },
         iconWrapper: {
-            marginLeft: iconAlign === 'right' ? SPACING.sm : 0,
-            marginRight: iconAlign === 'left' ? SPACING.sm : 0,
             display: 'flex',
             alignItems: 'center',
         },
+        iconGap: {
+            marginLeft: iconAlign === 'right' ? SPACING.sm : 0,
+            marginRight: iconAlign === 'left' ? SPACING.sm : 0,
+        }
     })
     return (
         <TouchableOpacity activeOpacity={0.5} disabled={disabled} {...rest}>
             <Flex direction={icon && iconAlign === 'right' ? 'row-reverse' : 'row'} style={[styles.button]}>
-                {icon ? (<View style={[styles.iconWrapper]}>{icon}</View>) : null}
+                {icon ? (<View style={[styles.iconWrapper, (label ? styles.iconGap : null)]}>{icon}</View>) : null}
                 {label ? (
                     <ThemeText style={[styles.buttonText]}>
                         {label}

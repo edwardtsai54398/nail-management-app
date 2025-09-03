@@ -6,7 +6,7 @@ import {Flex} from "@/components/layout/Flex";
 import type {PolishType} from "@/types/ui";
 import ThemeButton from "@/components/ui/ThemeButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
+import {forwardRef, useCallback, useImperativeHandle, useState, memo} from "react";
 import {uiStyles} from "@/assets/styles/ui";
 import usePolishTypesApi from '@/db/queries/polishTypes'
 import {useSQLiteContext} from "expo-sqlite";
@@ -103,6 +103,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
 const styles = StyleSheet.create({
     container: {
         paddingLeft: SPACING.md,
+        paddingRight: SPACING.sm,
         paddingTop: SPACING.sm,
         paddingBottom: SPACING.md,
         borderBottomWidth: 1,
@@ -111,4 +112,4 @@ const styles = StyleSheet.create({
 })
 PolishTypesSelector.displayName = 'PolishTypesSelector'
 
-export default PolishTypesSelector
+export default memo(PolishTypesSelector)
