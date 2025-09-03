@@ -3,7 +3,7 @@ import {PolishType, QueryResult} from "@/types/ui";
 import * as Crypto from 'expo-crypto'
 
 export default function (db: SQLiteDatabase) {
-    const addPolishType = async(typeName: string):Promise<QueryResult<PolishType>> => {
+    const createPolishType = async(typeName: string):Promise<QueryResult<PolishType>> => {
         try {
             return {
                 success: true,
@@ -22,6 +22,6 @@ export default function (db: SQLiteDatabase) {
     }
 
     return {
-        addPolishType
+        createPolishType
     }
 }

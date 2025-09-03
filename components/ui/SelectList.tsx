@@ -7,43 +7,30 @@ import {forwardRef, useCallback, useImperativeHandle, useState, memo, ReactNode}
 import {SPACING} from "@/constants/layout";
 import type {Brand} from "@/types/ui";
 
-type SelectListProps = {
-    data: Record<string, string>[]
-    uniqueKey: string
-    displayKey: string
-    onChange?: (value: string) => void
+type SelectListProps<T> = {
+    data: T[]
     noData?: ReactNode
+    isSelected?: (item: T) => boolean
+    renderItem: (item: T) => string
+    onItemPress?: (item: T) => void
 }
 
-export type SelectListRef = {
-    getId: () => string
-    setId: (id: string) => void
-}
 
-const SelectList = forwardRef<SelectListRef, SelectListProps>((
-    {data, uniqueKey, displayKey, onChange, noData},
-    ref
-) => {
-    const [idSelected, setIdSelected] = useState<string>('');
-    const handlePress = useCallback((item: any) => {
-        setIdSelected(item[uniqueKey])
-        onChange && onChange(item[uniqueKey])
-    }, [onChange, uniqueKey])
+const SelectList = <T extends object | string>({data, noData, renderItem, isSelected, onItemPress}: SelectListProps<T>) => {
+    const handlePress = useCallback((item: T) => {
+        onItemPress && onItemPress(item)
+    }, [onItemPress])
 
-    useImperativeHandle(ref, () => ({
-        getId: () => idSelected,
-        setId: (val) => {setIdSelected(val)}
-    }))
     return (
         <ScrollView>
             {
                 data.length ?
-                data.map((item) => (
-                    <Pressable key={item[uniqueKey]} onPress={() => {handlePress(item)}}>
+                data.map((item, i) => (
+                    <Pressable key={i} onPress={() => {handlePress(item)}}>
                         <Flex justify="between" style={styles.li}>
-                            <ThemeText>{item[displayKey]}</ThemeText>
+                            <ThemeText>{renderItem(item)}</ThemeText>
                             {
-                                idSelected === item[uniqueKey] ? (
+                                isSelected && isSelected(item) ? (
                                     <AntDesign name={'check'} size={20} style={{color: THEME_COLORS.primary}}/>
                                 ) : null
                             }
@@ -56,10 +43,10 @@ const SelectList = forwardRef<SelectListRef, SelectListProps>((
             }
         </ScrollView>
     )
-})
+}
 
 SelectList.displayName = "SelectList"
-export default memo(SelectList)
+export default memo(SelectList) as <T extends object | string>(props: SelectListProps<T>) => ReactNode
 
 const styles = StyleSheet.create({
     li: {

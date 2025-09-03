@@ -9,6 +9,11 @@ export type PolishType = {
     isOfficial: boolean
 }
 
+export type Tag = {
+    tagId: string
+    name: string
+}
+
 export type Polish = {
     polishId: string
     polishName: string

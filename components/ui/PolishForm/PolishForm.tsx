@@ -8,11 +8,13 @@ import type {PolishColumnRef, PolishFormValues, PolishFormRef} from "./types";
 import SeriesInput from "@/components/ui/PolishForm/SeriesInput";
 import ColorNameInput from "@/components/ui/PolishForm/ColorNameInput";
 import PolishTypesSelector from "@/components/ui/PolishForm/PolishTypesSelector";
-import {PolishType} from "@/types/ui";
+import {PolishType, Tag} from "@/types/ui";
 import ColorSelector from "@/components/ui/PolishForm/ColorSelector";
 import {Row, Col} from "@/components/layout/Flex";
 import StockCounter from "@/components/ui/PolishForm/StockCounter";
 import Favorites from "@/components/ui/PolishForm/Favorite";
+import TagsDisplay from "@/components/ui/PolishForm/TagsDisplay";
+import tagsDisplay from "@/components/ui/PolishForm/TagsDisplay";
 
 
 
@@ -33,6 +35,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
     const colorSelectorRef = useRef<PolishColumnRef<string[]>>(null)
     const stockRef = useRef<PolishColumnRef<number>>(null)
     const favoritesRef = useRef<PolishColumnRef<boolean>>(null)
+    const tagsRef = useRef<PolishColumnRef<Tag[]>>(null)
 
     const handleBrandInputChange = useCallback((brandId: string) => {
         // console.log('BrandInput Change', brandId)
@@ -48,7 +51,8 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
             polishType: polishTypesRef.current?.getValue() || null,
             colors: colorSelectorRef.current?.getValue() || [],
             stock: stockRef.current?.getValue() || 0,
-            isFavorites: favoritesRef.current?.getValue() || false
+            isFavorites: favoritesRef.current?.getValue() || false,
+            tags: tagsRef.current?.getValue() || []
         }),
         setValue: (key, val) => {
             switch (key) {
@@ -63,6 +67,9 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
                     break
                 case 'polishType':
                     polishTypesRef.current?.setValue(val as PolishType)
+                    break
+                case 'tags':
+                    tagsRef.current?.setValue(val as Tag[])
                     break
             }
         }
@@ -85,6 +92,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>((
                     </Col>
                 </Row>
             </View>
+            <TagsDisplay ref={tagsRef} values={initValRef.current.tags} />
         </View>
     )
 })

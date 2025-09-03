@@ -3,7 +3,7 @@ import {useSeriesStore} from "@/store/series";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {Series} from "@/types/ui";
 import {ParamsToSeriesSelect} from "@/types/routes";
-import SelectList, {SelectListRef} from "@/components/ui/SelectList";
+import SelectList from "@/components/ui/SelectList";
 import ThemeButton from "@/components/ui/ThemeButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {Flex} from "@/components/layout/Flex";
@@ -15,10 +15,10 @@ import {addSeries} from "@/db/queries/series";
 export default function SeriesSelect() {
     const router = useRouter();
     const params = useGlobalSearchParams<ParamsToSeriesSelect>()
-    const selectListRef = useRef<SelectListRef>(null)
     const seriesMap = useSeriesStore(state => state.seriesMap)
     const addSeriesData = useSeriesStore(state => state.addData)
     const [seriesList, setSeriesList] = useState<Series[]>([])
+    const [seriesIdSelected, setIdSelected] = useState<string>('');
     const [isAddSeriesMode, setIsAddSeriesMode] = useState(false);
     const [addSeriesText, setAddSeriesText] = useState<string>('');
 
@@ -34,18 +34,19 @@ export default function SeriesSelect() {
     }, [seriesMap, params])
 
     useEffect(() => {
-        if(!params.seriesId || !selectListRef.current) return
+        if(!params.seriesId) return
         // console.log('series-select got seriesId', params)
-        selectListRef.current.setId(params.seriesId)
-    }, [params, selectListRef])
+        setIdSelected(params.seriesId)
+    }, [params])
+
+    const renderItem = useCallback((s: Series) => s.seriesName, [])
+    const isSelected = useCallback((s: Series) => s.seriesId === seriesIdSelected, [seriesIdSelected])
+    const handleSeriesItemPress = useCallback((s: Series) => {setIdSelected(s.seriesId)}, [setIdSelected])
 
     const handleGoBack = useCallback(() => {
         router.back()
-        if(selectListRef.current) {
-            const seriesId = selectListRef.current.getId()
-            router.setParams({seriesId})
-        }
-    }, [])
+        router.setParams({seriesId: seriesIdSelected})
+    }, [seriesIdSelected])
 
     const handleCancelPress = () => {
         setIsAddSeriesMode(false);
@@ -58,9 +59,7 @@ export default function SeriesSelect() {
             if(!response.success) return
             const {data} = response
             addSeriesData(data.brandId, [data])
-            if(selectListRef.current) {
-                selectListRef.current.setId(data.seriesId)
-            }
+            setIdSelected(data.seriesId)
             setIsAddSeriesMode(false);
             setAddSeriesText('')
         } catch (e) {
@@ -91,7 +90,7 @@ export default function SeriesSelect() {
                     <ThemeButton text label={'完成'} disabled={(addSeriesText === '')} onPress={handleFinishPress} />
                 </Flex>
             ) : null}
-            <SelectList ref={selectListRef} data={seriesList} uniqueKey={'seriesId'} displayKey={'seriesName'} />
+            <SelectList data={seriesList} isSelected={isSelected} renderItem={renderItem} onItemPress={handleSeriesItemPress}/>
         </>
     )
 }

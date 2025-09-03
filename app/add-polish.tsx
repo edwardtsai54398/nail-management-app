@@ -9,6 +9,7 @@ import {LINE_COLORS} from "@/constants/Colors";
 import {useRef, useState, useEffect} from "react";
 import type {PolishFormValues, PolishFormRef, ParamsFromSelection} from "@/components/ui/PolishForm/types";
 import PolishForm from "@/components/ui/PolishForm/PolishForm";
+import {useTagStore} from "@/store/tags";
 
 
 
@@ -16,6 +17,7 @@ import PolishForm from "@/components/ui/PolishForm/PolishForm";
 export default function AddPolish() {
     const navigation = useNavigation();
     const params = useGlobalSearchParams<ParamsFromSelection>()
+    const useTags = useTagStore(state => state.data)
     const initValues:PolishFormValues = {
         brandId: '',
         seriesId: '',
@@ -23,7 +25,8 @@ export default function AddPolish() {
         polishType: null,
         colors: [],
         stock: 1,
-        isFavorites: false
+        isFavorites: false,
+        tags: []
     }
 
     const formRef = useRef<PolishFormRef>(null)
@@ -31,12 +34,17 @@ export default function AddPolish() {
     useEffect(() => {
         if(!formRef.current) return
         if(params.brandId) {
-            // console.log('set brandId', params.brandId)
+            console.log('set brandId', params)
             formRef.current.setValue('brandId', params.brandId)
         }
         if(params.seriesId) {
-            // console.log('set seriesId', params.seriesId)
+            console.log('set seriesId', params)
             formRef.current.setValue('seriesId', params.seriesId)
+        }
+        if(params.tagIds) {
+            console.log('set tagIds', params)
+            const tagIds = JSON.parse(params.tagIds)
+            formRef.current.setValue('tags', useTags.filter(tag => tagIds.includes(tag.tagId)))
         }
     }, [params]);
 

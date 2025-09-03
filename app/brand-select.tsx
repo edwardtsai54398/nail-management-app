@@ -7,38 +7,37 @@ import {SPACING} from "@/constants/layout";
 import {LINE_COLORS} from "@/constants/Colors";
 import {useBrandStore} from "@/store/brands";
 import {Flex} from "@/components/layout/Flex";
-import SelectList, {SelectListRef} from "@/components/ui/SelectList";
+import SelectList from "@/components/ui/SelectList";
 import {ParamsToBrandSelect} from "@/types/routes";
 import {uiStyles} from "@/assets/styles/ui";
 import {addBrand} from "@/db/queries/brand";
 import {useSeriesStore} from "@/store/series";
-import {Series} from "@/types/ui";
+import {Brand, Series} from "@/types/ui";
 
 export default function BrandSelect() {
     const router = useRouter();
     const params = useGlobalSearchParams<ParamsToBrandSelect>()
-    const selectListRef = useRef<SelectListRef>(null)
     const brands = useBrandStore(state => state.data)
     const setBrands = useBrandStore(state => state.setData)
     const addSeries = useSeriesStore(state => state.addData)
-    const brandIdSelected = useRef<string>('');
+    const [brandIdSelected, setIdSelected] = useState<string>('');
     const [isAddBrandMode, setIsAddBrandMode] = useState(false);
     const [addBrandText, setAddBrandText] = useState<string>('');
 
     useEffect(() => {
         if(!params.brandId || !brands.some(b => b.brandId === params.brandId)) return
-        brandIdSelected.current = params.brandId
-        if(selectListRef.current) {
-            selectListRef.current.setId(params.brandId)
-        }
-    }, [params, selectListRef])
+        setIdSelected(params.brandId)
+    }, [params])
+
+    const renderItem = useCallback((b: Brand) => b.brandName, [])
+    const isSelected = useCallback((b: Brand) => b.brandId === brandIdSelected , [brandIdSelected])
+    const handleBrandItemPress = useCallback((b: Brand) => {
+        setIdSelected(b.brandId)
+    }, [])
 
     const handleGoBack = useCallback(() => {
         router.back()
-        if(selectListRef.current) {
-            const brandId = selectListRef.current.getId()
-            router.setParams({brandId})
-        }
+            router.setParams({brandId: brandIdSelected})
     }, [brandIdSelected])
 
     const handleCancelPress = () => {
@@ -54,9 +53,7 @@ export default function BrandSelect() {
             const brand = response.data
             setBrands([brand, ...brands])
             addSeries(brand.brandId, [])
-            if(selectListRef.current) {
-                selectListRef.current.setId(response.data.brandId)
-            }
+            setIdSelected(response.data.brandId)
             setIsAddBrandMode(false);
             setAddBrandText('')
         } catch (e) {
@@ -89,7 +86,12 @@ export default function BrandSelect() {
                     <ThemeButton text label={'完成'} disabled={(addBrandText === '')} onPress={handleFinishPress} />
                 </Flex>
             ) : null}
-            <SelectList ref={selectListRef} data={brands} uniqueKey={'brandId'} displayKey={'brandName'}/>
+            <SelectList
+                data={brands}
+                renderItem={renderItem}
+                isSelected={isSelected}
+                onItemPress={handleBrandItemPress}
+            />
         </>
     )
 }

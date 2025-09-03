@@ -1,4 +1,4 @@
-import {Polish, PolishType} from "@/types/ui";
+import {Polish, PolishType, Tag} from "@/types/ui";
 
 export type PolishFormValues = {
     brandId: string
@@ -8,12 +8,14 @@ export type PolishFormValues = {
     colors: Pick<Polish, 'colors'>['colors']
     stock: number
     isFavorites: boolean
+    tags: Tag[]
 }
 
 
 export type ParamsFromSelection = {
     brandId?: string
     seriesId?: string
+    tagIds?: string
 }
 
 export type PolishColumnRef<T> = {
@@ -23,5 +25,5 @@ export type PolishColumnRef<T> = {
 
 export type PolishFormRef = {
     getValues: () => PolishFormValues
-    setValue: (key: keyof PolishFormValues, val: PolishFormValues[keyof PolishFormValues]) => void
+    setValue: <T extends keyof PolishFormValues>(key: T, val: PolishFormValues[T]) => void
 }

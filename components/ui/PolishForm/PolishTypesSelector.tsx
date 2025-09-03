@@ -28,7 +28,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
         {typeId: '7', name: '貓眼', isOfficial: true},
     ]
     const db = useSQLiteContext();
-    const {addPolishType} = usePolishTypesApi(db)
+    const {createPolishType} = usePolishTypesApi(db)
     const [polishTypes, setPolishTypes] = useState<PolishType[]>(data)
     const [isAddMode, setIsAddMode] = useState<boolean>(false)
     const [customPolishTypeName, setCustomPolishTypeName] = useState<string>('')
@@ -47,7 +47,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
     }
     const handleFinishPress = async() => {
         try {
-            const response = await addPolishType(customPolishTypeName)
+            const response = await createPolishType(customPolishTypeName)
             if(!response.success) return
             setPolishTypes(prev => [...prev, response.data])
             setTypeSelected(response.data)

@@ -2,6 +2,7 @@ import { Col, Flex, Row } from "@/components/layout/Flex";
 import { ThemeText } from "@/components/layout/ThemeText";
 import PolishCard from "@/components/ui/PolishCard";
 import usePolishApi from "@/db/queries/polishItem";
+import useTagsApi from "@/db/queries/tags";
 import { useSQLiteContext } from "expo-sqlite";
 import {FONT_SIZES, GRID_GAP, MOBILE_BAR_HEIGHT, SPACING} from "@/constants/layout";
 import { Polish, SectionData, Brand } from "@/types/ui";
@@ -14,6 +15,7 @@ import FloatingBtn from "@/components/ui/FloatingBtn";
 import {useRouter} from "expo-router";
 import {useBrandStore} from "@/store/brands";
 import {useSeriesStore} from "@/store/series";
+import {useTagStore} from "@/store/tags";
 
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][]{
@@ -29,9 +31,11 @@ export default function Index() {
   const router = useRouter()
   const setBrandsState = useBrandStore((state) => state.setData)
   const setSeriesState = useSeriesStore(state => state.setData)
+  const setTagsState = useTagStore(state => state.setData)
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext();
   const {getPolishList} = usePolishApi(db)
+  const {getTags} = useTagsApi(db)
   useEffect(() => {
 
     getPolishList().then((result) => {
@@ -50,6 +54,10 @@ export default function Index() {
     })
     getBrands().then((result) => {
       setBrandsState(result.data)
+    })
+    getTags().then((res) => {
+      if(!res.success) return
+      setTagsState(res.data)
     })
   }, [])
 

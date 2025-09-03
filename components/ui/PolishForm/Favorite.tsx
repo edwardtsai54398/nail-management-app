@@ -38,4 +38,4 @@ const Favorite = forwardRef<PolishColumnRef<boolean>, FavoriteProps>((props, ref
 
 
 Favorite.displayName = 'Favorite'
-export default Favorite
+export default memo(Favorite)
