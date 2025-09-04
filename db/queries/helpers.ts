@@ -2,11 +2,11 @@ import { ColumnBlueprint, Tables } from "../schema"
 
 
 
-export const insertInto = <T extends Record<string, ColumnBlueprint>>(tableName: keyof Tables, tableBlueprint: T) => {
+export const insertInto = <T extends Record<string, ColumnBlueprint>>(tableName: keyof Tables) => {
     let str = `INSERT INTO ${tableName} `
-    let colArray: (keyof T)[] = []
+    let colArray: string[] = []
     let valArray: (string | number)[] = []
-    function colVal(colVals: [keyof T, string | number]) {
+    function colVal(colVals: [string, string | number]) {
       colArray.push(colVals[0])
       valArray.push(colVals[1])
       return {colVal, end}
