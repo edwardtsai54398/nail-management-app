@@ -1,54 +1,56 @@
 import * as Crypto from 'expo-crypto';
 import { type SQLiteDatabase } from 'expo-sqlite';
 import {
-  ColumnBlueprint,
   generateCreateTable,
   oBrandsTableBlueprint,
   oColorTypesTableBlueprint,
   oPolishItemsTableBlueprint,
   oPolishSeriesTableBlueprint,
+  oPolishTypesTableBluePrint,
   polishImagesTableBlueprint,
   polishItemsColorsTableBlueprint,
   polishItemTagsTableBlueprint,
-  Tables,
   uBrandsTableBlueprint,
   uPolishItemsTableBlueprint,
   uPolishSeriesTableBlueprint,
+  uPolishStocksTableBlueprint,
   uPolishTypesTableBlueprint,
-  UserSchema,
   userTableBlueprint,
   uTagsTableBlueprint
 } from './schema';
+import createFakeData from './createFakeData';
+
+const OFFICIAL_POLISH_TYPES = [
+    {key: 'CAT_EYE', tw: '貓眼'}, 
+    {key: 'PEARLESCENT', tw: '珠光'}, 
+    {key: 'SHEER_COLOR', tw: '透色'},
+    {key: 'SOLID_COLOR', tw: '實色'},
+    {key: 'GLITTER_GEL', tw: '亮片膠'},
+    {key: 'METALLIC_GEL', tw: '金屬凝膠'},
+    {key: 'PLASTER_GEL', tw: '石膏凝膠'},
+    {key: 'OIL_PAINT_GEL', tw: '油畫凝膠'},
+    {key: 'TAP_GEL', tw: '拍拍膠'},
+    {key: 'BLOOMING_LIQUID', tw: '暈染液'},
+  ]
+  const OFFICIAL_COLOR_TYPES = [
+    {key: 'RED', tw: '紅'}, 
+    {key: 'PINK', tw: '粉紅'}, 
+    {key: 'ORANGE', tw: '橘'}, 
+    {key: 'YELLOW', tw: '黃'}, 
+    {key: 'GREEN', tw: '綠'}, 
+    {key: 'BLUE', tw: '藍'}, 
+    {key: 'PURPLE', tw: '紫'}, 
+    {key: 'WHITE', tw: '白'}, 
+    {key: 'BLACK', tw: '黑'}, 
+    {key: 'GRAY', tw: '灰'}, 
+    {key: 'BROWN', tw: ''}, 
+    {key: 'BEIGE', tw: ''}, 
+    {key: 'SILVER', tw: ''}, 
+    {key: 'GOLDEN', tw: ''}
+  ]
 
 export async function runMigrations(db: SQLiteDatabase) {
   console.log('runMigrations');
-  const OFFICIAL_POLISH_TYPES = [
-    '貓眼', 
-    '珠光', 
-    '透光',
-    '實色',
-    '亮片膠',
-    '石膏凝膠',
-    '油畫凝膠',
-    '拍拍膠',
-    '暈染液',
-  ]
-  const OFFICIAL_COLOR_TYPES = [
-    {keyName: 'RED', id: 'b1df4c8e-5674-cd27-ac48-b54d62e2ddc5'}, 
-    {keyName: 'PINK', id: 'e7b315f3-d279-3d89-c4b2-f023602bcafd'}, 
-    {keyName: 'ORANGE', id: '4b46d9c1-93b8-ceb7-3fb0-245ce4c48c00'}, 
-    {keyName: 'YELLOW', id: '7fe6f342-5663-7f5f-13d3-c8e0b1c838e3'}, 
-    {keyName: 'GREEN', id: 'bf333eb3-5ac5-efa0-7d0d-5ea95240ddf6'}, 
-    {keyName: 'BLUE', id: 'd02ebe29-cb60-5c56-748b-fe1cb9a77b51'}, 
-    {keyName: 'PURPLE', id: '29e20513-02b4-7963-32cd-1afed717f192'}, 
-    {keyName: 'WHITE', id: '1ddede93-012e-a74b-a68b-3d977a53efdc'}, 
-    {keyName: 'BLACK', id: 'e00ad4a4-2c6c-96d3-aae0-b4ab5a6e1fd7'}, 
-    {keyName: 'GRAY', id: '787f11cd-9085-86fc-5e7e-e4e9c08bb6b9'}, 
-    {keyName: 'BROWN', id: '47fe6a43-af05-6db2-9123-d6ada1b5863e'}, 
-    {keyName: 'BEIGE', id: '3009509d-ea9d-658d-9554-06b7ccbc62e1'}, 
-    {keyName: 'SHILVER', id: '683c510c-68ce-5060-74f7-826df2c645ee'}, 
-    {keyName: 'GOLDEN', id: '1036126f-8b73-3f77-02ae-a8e738fa967e'}
-  ]
   try{
     await db.execAsync(generateCreateTable('users', userTableBlueprint))
     const userRows = await db.getAllAsync(`SELECT COUNT(*) AS count from users`) as {count: number}[]
@@ -59,6 +61,8 @@ export async function runMigrations(db: SQLiteDatabase) {
       await db.runAsync(`INSERT INTO users (id) VALUES ('${Crypto.randomUUID()}')`)
     }
 
+    await db.execAsync(generateCreateTable('user_polish_stocks', uPolishStocksTableBlueprint))
+    console.log(`Table user_polish_stocks exceuted`);
 
     await db.execAsync(generateCreateTable('user_polish_items', uPolishItemsTableBlueprint))
         console.log(`Table user_polish_items exceuted`);
@@ -78,17 +82,15 @@ export async function runMigrations(db: SQLiteDatabase) {
     
     await db.execAsync(generateCreateTable('user_polish_types', uPolishTypesTableBlueprint))
     console.log(`Table user_polish_types exceuted`);
+
+    await db.execAsync(generateCreateTable('official_polish_types', oPolishTypesTableBluePrint))
+    console.log(`Table official_polish_types exceuted`);
     //檢查是否系統色膠種類已經存在，否則寫入
-    const user = await db.getFirstAsync<UserSchema>(`SELECT id FROM users`)
+    // const user = await db.getFirstAsync<UserSchema>(`SELECT id FROM users`)
     for (const item of OFFICIAL_POLISH_TYPES) {
-      const exist = await db.getFirstAsync<{isExist: number}>(`SELECT EXISTS(SELECT 1 FROM user_polish_types WHERE type_name = ?) as isExist`, item)
-      // console.log(`if ${item} exists`, exist);
-      
-    
+      const exist = await db.getFirstAsync<{isExist: number}>(`SELECT EXISTS(SELECT 1 FROM official_polish_types WHERE type_key = ?) as isExist`, item.key)
       if(exist!.isExist === 0){
-        console.log(`INSERT ${item}`);
-        
-        await db.runAsync(`INSERT INTO user_polish_types (polish_type_id, user_id, type_name) VALUES (?, ?, ?)`, [Crypto.randomUUID(), user!.id, item])
+        await db.runAsync(`INSERT INTO official_polish_types (type_key, zh_tw) VALUES (?, ?)`, item.key, item.tw)
       }
     }
 
@@ -111,16 +113,18 @@ export async function runMigrations(db: SQLiteDatabase) {
     await db.execAsync(generateCreateTable('official_color_types', oColorTypesTableBlueprint))
     //檢查是否系統顏色已經存在，否則寫入
     for (const item of OFFICIAL_COLOR_TYPES) {
-      const exist = await db.getFirstAsync<{isExist: number}>(`SELECT EXISTS(SELECT 1 FROM official_color_types WHERE color_type_id = ?) as isExist`, item.id)
+      const exist = await db.getFirstAsync<{isExist: number}>(`SELECT EXISTS(SELECT 1 FROM official_color_types WHERE color_key = ?) as isExist`, item.key)
       // console.log(`if ${item.keyName} exists`, exist);
     
       if(exist!.isExist === 0){
-        await db.runAsync(`INSERT INTO official_color_types (color_type_id, color_type) VALUES (?, ?)`, [item.id, item.keyName])
+        await db.runAsync(`INSERT INTO official_color_types (color_key, zh_tw) VALUES (?, ?)`, [item.key, item.tw])
       
       }
     }
 
     await db.execAsync(`PRAGMA foreign_keys = ON;`)
+
+    await createFakeData(db)
 
   } catch(e){
     console.error('RUN_MIGRATIONS ERROR:');

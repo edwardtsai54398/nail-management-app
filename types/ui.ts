@@ -13,7 +13,10 @@ export type Tag = {
     tagId: string
     name: string
 }
-
+export type Color = {
+    colorKey: string
+    name: string
+}
 export type Polish = {
     polishId: string
     polishName: string
@@ -23,11 +26,11 @@ export type Polish = {
     brandName: string
     seriesId?: string
     seriesName: string
-    colors: string[]
+    colors: Color[]
     note: string
     images: PolishImage[]
     polishType: PolishType,
-    tags: string[]
+    tags: Tag[]
 }
 
 export type Series = {
