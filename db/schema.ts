@@ -1,64 +1,61 @@
-type TypeToSQLite<T> =
-  T extends string ? "TEXT" :
-  T extends number ? "INTEGER" :
-  never;
+type TypeToSQLite<T> = T extends string ? 'TEXT' : T extends number ? 'INTEGER' : never
 
 export interface ColumnBlueprint {
-    type: "TEXT" | "INTEGER";
-    primaryKey?: boolean;
-    notNull?: boolean
-    default?: string | number | boolean | null;
-    foreignKey?: { 
-      table: string; 
-      column: string; 
-      onDelete?: "CASCADE" | "SET NULL" | "RESTRICT" | "NO ACTION";
-      onUpdate?: "CASCADE" | "SET NULL" | "RESTRICT" | "NO ACTION";
-    }
+  type: 'TEXT' | 'INTEGER'
+  primaryKey?: boolean
+  notNull?: boolean
+  default?: string | number | boolean | null
+  foreignKey?: {
+    table: string
+    column: string
+    onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
+    onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
   }
-type ForeignKey = { 
+}
+type ForeignKey = {
   [T in keyof Tables]: {
-      table: T
-      column: keyof Tables[T]
-      onDelete?: "CASCADE" | "SET NULL" | "RESTRICT" | "NO ACTION"
-      onUpdate?: "CASCADE" | "SET NULL" | "RESTRICT" | "NO ACTION"
-    }
+    table: T
+    column: keyof Tables[T]
+    onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
+    onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
+  }
 }[keyof Tables]
 
-
-type ColumnBlueprintFor<T> = Omit<ColumnBlueprint, "type"> & {
-  type: TypeToSQLite<T>;
+type ColumnBlueprintFor<T> = Omit<ColumnBlueprint, 'type'> & {
+  type: TypeToSQLite<T>
   foreignKey?: ForeignKey
-};
+}
 
 type TableBlueprint<T extends Record<string, any>> = {
-  [K in keyof T]: ColumnBlueprintFor<T[K]>;
-};
+  [K in keyof T]: ColumnBlueprintFor<T[K]>
+}
 
+export const generateCreateTable = <T extends keyof Tables>(
+  tableName: T,
+  blueprint: Record<string, ColumnBlueprint>,
+) => {
+  const columnsSql = Object.entries(blueprint).map(([colName, options]) => {
+    let str = `${colName} ${options.type}`
+    if (options.primaryKey) str += ' PRIMARY KEY'
+    if (options.notNull) str += ' NOT NULL'
 
-export const generateCreateTable = <T extends keyof Tables>(tableName: T, blueprint: Record<string, ColumnBlueprint>) => {
-  const columnsSql = Object.entries(blueprint)
-    .map(([colName, options]) => {
-      let str = `${colName} ${options.type}`
-      if (options.primaryKey) str += " PRIMARY KEY"
-      if (options.notNull) str += " NOT NULL"
+    // 預設值處理
+    if (options.default !== undefined) str += ` DEFAULT ${options.default}`
 
-      // 預設值處理
-      if (options.default !== undefined) str += ` DEFAULT ${options.default}`;
-
-      return str;
-    })
-
-  const foreignKeySql = Object.entries(blueprint)
-  .filter(([colName, options]) => options.foreignKey)
-  .map(([colName, options]) => {
-    const fk = options.foreignKey!
-    let str = `FOREIGN KEY(${colName}) REFERENCES ${fk.table}(${fk.column})`
-    if(fk.onDelete) str += ` ON DELETE ${fk.onDelete}`
-    if(fk.onUpdate) str += ` ON UPDATE ${fk.onUpdate}`
     return str
   })
+
+  const foreignKeySql = Object.entries(blueprint)
+    .filter(([colName, options]) => options.foreignKey)
+    .map(([colName, options]) => {
+      const fk = options.foreignKey!
+      let str = `FOREIGN KEY(${colName}) REFERENCES ${fk.table}(${fk.column})`
+      if (fk.onDelete) str += ` ON DELETE ${fk.onDelete}`
+      if (fk.onUpdate) str += ` ON UPDATE ${fk.onUpdate}`
+      return str
+    })
   const allDefs = [...columnsSql, ...foreignKeySql]
-  
+
   return `CREATE TABLE IF NOT EXISTS ${tableName} (${allDefs.join(', ')});`
 }
 
@@ -67,7 +64,7 @@ export interface UserSchema {
 }
 
 export const userTableBlueprint: TableBlueprint<UserSchema> = {
-  id: {type: 'TEXT', primaryKey: true, notNull: true}
+  id: { type: 'TEXT', primaryKey: true, notNull: true },
 }
 
 /*
@@ -139,16 +136,35 @@ export interface UserPolishItemsSchema {
 }
 
 export const uPolishItemsTableBlueprint: TableBlueprint<UserPolishItemsSchema> = {
-  polish_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type:"TEXT", notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  official_polish_id: {type: "TEXT", foreignKey: {table: 'official_polish_items', column: 'polish_id', onDelete: 'SET NULL'}},
-  color_name: {type: "TEXT", notNull: true},
-  official_series_id: {type: 'TEXT', foreignKey: {table: 'official_polish_series', column: 'series_id', onDelete: 'SET NULL'}},
-  user_series_id: {type: 'TEXT', foreignKey: {table: 'user_polish_series', column: 'series_id', onDelete: 'SET NULL'}},
-  user_polish_type: {type: 'TEXT', foreignKey: {table: 'user_polish_types', column: 'polish_type_id'}},
-  official_polish_type: {type: 'TEXT', foreignKey: {table: 'official_polish_types', column: 'type_key'}},
-  created_at: {type: "TEXT", default: '(CURRENT_TIMESTAMP)', notNull: true},
-  last_updated_at: {type: "TEXT", default: '(CURRENT_TIMESTAMP)', notNull: true},
+  polish_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  official_polish_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_polish_items', column: 'polish_id', onDelete: 'SET NULL' },
+  },
+  color_name: { type: 'TEXT', notNull: true },
+  official_series_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_polish_series', column: 'series_id', onDelete: 'SET NULL' },
+  },
+  user_series_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'user_polish_series', column: 'series_id', onDelete: 'SET NULL' },
+  },
+  user_polish_type: {
+    type: 'TEXT',
+    foreignKey: { table: 'user_polish_types', column: 'polish_type_id' },
+  },
+  official_polish_type: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_polish_types', column: 'type_key' },
+  },
+  created_at: { type: 'TEXT', default: '(CURRENT_TIMESTAMP)', notNull: true },
+  last_updated_at: { type: 'TEXT', default: '(CURRENT_TIMESTAMP)', notNull: true },
 }
 
 /**
@@ -175,13 +191,21 @@ export interface PolishImagesSchema {
 }
 
 export const polishImagesTableBlueprint: TableBlueprint<PolishImagesSchema> = {
-  image_id: {type:'TEXT', primaryKey:true,notNull:true},
-  user_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  stock_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE'}},
-  image_order: {type: 'INTEGER', notNull: true},
-  url: {type: 'TEXT', notNull: true},
-  created_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
-  last_updated_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
+  image_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  stock_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE' },
+  },
+  image_order: { type: 'INTEGER', notNull: true },
+  url: { type: 'TEXT', notNull: true },
+  created_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
+  last_updated_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
 }
 
 /**
@@ -201,9 +225,17 @@ export interface PolishItemColorsSchema {
 }
 
 export const polishItemsColorsTableBlueprint: TableBlueprint<PolishItemColorsSchema> = {
-  id: {type: 'TEXT', primaryKey: true, notNull: true},
-  stock_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE'}},
-  color_key: {type: 'TEXT', notNull:true, foreignKey: {table: 'official_color_types', column: 'color_key'}}
+  id: { type: 'TEXT', primaryKey: true, notNull: true },
+  stock_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE' },
+  },
+  color_key: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'official_color_types', column: 'color_key' },
+  },
 }
 
 /**
@@ -234,15 +266,28 @@ export interface UserPolishSeriesSchema {
 }
 
 export const uPolishSeriesTableBlueprint: TableBlueprint<UserPolishSeriesSchema> = {
-  series_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  series_name: {type: 'TEXT', notNull: true},
-  official_brand_id: {type: 'TEXT', foreignKey: {table: 'official_brands', column:'brand_id', onDelete: 'CASCADE'}},
-  user_brand_id: {type: 'TEXT', foreignKey: {table: 'user_brands', column:'brand_id', onDelete: 'CASCADE'}},
-  official_series_id: {type: 'TEXT', foreignKey: {table: 'official_polish_series', column: 'series_id', onDelete: 'SET NULL'}},
-  is_bind_official: {type: 'INTEGER', notNull: true, default: 0},
-  created_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
-  last_updated_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
+  series_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  series_name: { type: 'TEXT', notNull: true },
+  official_brand_id: {
+    type: 'TEXT',
+    foreignKey: {table: 'official_brands', column:'brand_id', onDelete: 'CASCADE'}
+  },
+  user_brand_id: {
+    type: 'TEXT',
+    foreignKey: {table: 'user_brands', column:'brand_id', onDelete: 'CASCADE'}
+  },
+  official_series_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_polish_series', column: 'series_id', onDelete: 'SET NULL' },
+  },
+  is_bind_official: { type: 'INTEGER', notNull: true, default: 0 },
+  created_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
+  last_updated_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
 }
 
 /**
@@ -269,13 +314,20 @@ interface UserBrandsSchema {
 }
 
 export const uBrandsTableBlueprint: TableBlueprint<UserBrandsSchema> = {
-  brand_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type: 'TEXT',notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  brand_name: {type: 'TEXT', notNull: true},
-  official_brand_id: {type: 'TEXT', foreignKey: {table: 'official_brands', column: 'brand_id', onDelete: 'SET NULL'}},
-  is_bind_official: {type: 'INTEGER', default: 0, notNull: true},
-  created_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
-  last_updated_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'}
+  brand_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  brand_name: { type: 'TEXT', notNull: true },
+  official_brand_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_brands', column: 'brand_id', onDelete: 'SET NULL' },
+  },
+  is_bind_official: { type: 'INTEGER', default: 0, notNull: true },
+  created_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
+  last_updated_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
 }
 
 /**
@@ -299,11 +351,15 @@ interface UserPolishTypesSchema {
 }
 
 export const uPolishTypesTableBlueprint: TableBlueprint<UserPolishTypesSchema> = {
-  polish_type_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  type_name: {type: 'TEXT', notNull: true},
-  created_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
-  last_updated_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'}
+  polish_type_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  type_name: { type: 'TEXT', notNull: true },
+  created_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
+  last_updated_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
 }
 
 /**
@@ -324,10 +380,18 @@ interface OfficialPolishItemsSchema {
 }
 
 export const oPolishItemsTableBlueprint: TableBlueprint<OfficialPolishItemsSchema> = {
-  polish_id: {type: 'TEXT', primaryKey:true, notNull: true},
-  polish_type: {type: 'TEXT', notNull: true, foreignKey: {table: 'official_polish_types', column: 'type_key'}},
-  series_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'official_polish_series', column: 'series_id'}},
-  color_name: {type: 'TEXT', notNull: true}
+  polish_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  polish_type: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'official_polish_types', column: 'type_key' },
+  },
+  series_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'official_polish_series', column: 'series_id' },
+  },
+  color_name: { type: 'TEXT', notNull: true },
 }
 
 /**
@@ -346,9 +410,13 @@ interface OfficialPolishSeriesSchema {
 }
 
 export const oPolishSeriesTableBlueprint: TableBlueprint<OfficialPolishSeriesSchema> = {
-  series_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  series_name: {type: 'TEXT', notNull: true},
-  brand_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'official_brands', column: 'brand_id'}}
+  series_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  series_name: { type: 'TEXT', notNull: true },
+  brand_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'official_brands', column: 'brand_id' },
+  },
 }
 
 /**
@@ -365,8 +433,8 @@ interface OfficialBrandsSchema {
 }
 
 export const oBrandsTableBlueprint: TableBlueprint<OfficialBrandsSchema> = {
-  brand_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  brand_name: {type: 'TEXT', notNull: true}
+  brand_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  brand_name: { type: 'TEXT', notNull: true },
 }
 
 /**
@@ -395,8 +463,8 @@ interface OfficialPolishTypesSchema {
 }
 
 export const oPolishTypesTableBluePrint: TableBlueprint<OfficialPolishTypesSchema> = {
-  type_key: {type: 'TEXT', notNull: true, primaryKey:true},
-  zh_tw: {type: 'TEXT', notNull:true}
+  type_key: { type: 'TEXT', primaryKey: true, notNull: true },
+  zh_tw: { type: 'TEXT', notNull: true },
 }
 
 /**
@@ -411,7 +479,7 @@ export const oPolishTypesTableBluePrint: TableBlueprint<OfficialPolishTypesSchem
  */
 
 interface UserTagsSchema {
-  tag_id: string,
+  tag_id: string
   user_id: string
   tag_name: string
   created_at: string
@@ -419,11 +487,15 @@ interface UserTagsSchema {
 }
 
 export const uTagsTableBlueprint: TableBlueprint<UserTagsSchema> = {
-  tag_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  tag_name: {type: 'TEXT', notNull: true},
-  created_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'},
-  last_updated_at: {type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)'}
+  tag_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  tag_name: { type: 'TEXT', notNull: true },
+  created_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
+  last_updated_at: { type: 'TEXT', notNull: true, default: '(CURRENT_TIMESTAMP)' },
 }
 
 /**
@@ -443,9 +515,17 @@ interface PolishItemTagsSchema {
 }
 
 export const polishItemTagsTableBlueprint: TableBlueprint<PolishItemTagsSchema> = {
-  id: {type: 'TEXT', primaryKey: true, notNull: true},
-  stock_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE'}},
-  tag_id: {type: 'TEXT', notNull: true, foreignKey: {table: 'user_tags', column: 'tag_id', onDelete: 'CASCADE'}}
+  id: { type: 'TEXT', primaryKey: true, notNull: true },
+  stock_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'user_polish_stocks', column: 'stock_id', onDelete: 'CASCADE' },
+  },
+  tag_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'user_tags', column: 'tag_id', onDelete: 'CASCADE' },
+  },
 }
 
 /**
@@ -478,8 +558,8 @@ export interface OfficialColorTypesSchema {
 }
 
 export const oColorTypesTableBlueprint: TableBlueprint<OfficialColorTypesSchema> = {
-  color_key: {type: 'TEXT', notNull: true, primaryKey: true},
-  zh_tw: {type: 'TEXT', notNull: true}
+  color_key: { type: 'TEXT', primaryKey: true, notNull: true },
+  zh_tw: { type: 'TEXT', notNull: true },
 }
 
 export interface Tables {

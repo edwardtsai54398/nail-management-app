@@ -1,12 +1,12 @@
 export type ParamsToBrandSelect = {
-    brandId?: string;
+  brandId?: string
 }
 
 export type ParamsToSeriesSelect = {
-    brandId: string;
-    seriesId?: string;
+  brandId: string
+  seriesId?: string
 }
 
 export type ParamsToTagsSelect = {
-    tagIds?: string
+  tagIds?: string
 }
