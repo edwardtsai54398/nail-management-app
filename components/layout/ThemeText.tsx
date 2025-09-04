@@ -1,7 +1,7 @@
-import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors';
-import { FONT_SIZES } from '@/constants/layout';
-import { ReactNode } from "react";
-import { StyleSheet, Animated, type TextProps,  } from 'react-native';
+import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors'
+import { FONT_SIZES } from '@/constants/layout'
+import { ReactNode } from 'react'
+import { StyleSheet, Animated, type TextProps } from 'react-native'
 
 type TextColorsKeys = keyof typeof TEXT_COLORS
 type ThemeColorsKeys = keyof typeof THEME_COLORS
@@ -9,29 +9,27 @@ type FontSizeKeys = keyof typeof FONT_SIZES
 
 export type ThemeTextProps = TextProps & {
   color?: TextColorsKeys | ThemeColorsKeys
-  type?: 'default' | 'title' | 'subtitle' | 'link';
+  type?: 'default' | 'title' | 'subtitle' | 'link'
   size?: FontSizeKeys
-    children: ReactNode
-};
-
+  children: ReactNode
+}
 
 export function ThemeText({
   style,
-    color = 'default',
+  color = 'default',
   type = 'default',
   size,
   children,
   ...reset
 }: ThemeTextProps) {
-
-    const getTextColor = (key: ThemeTextProps['color'] = 'default') => {
-        if(key in TEXT_COLORS){
-            return TEXT_COLORS[key as TextColorsKeys]
-        }
-        if(key in THEME_COLORS){
-            return THEME_COLORS[key as ThemeColorsKeys]
-        }
+  const getTextColor = (key: ThemeTextProps['color'] = 'default') => {
+    if (key in TEXT_COLORS) {
+      return TEXT_COLORS[key as TextColorsKeys]
     }
+    if (key in THEME_COLORS) {
+      return THEME_COLORS[key as ThemeColorsKeys]
+    }
+  }
   return (
     <Animated.Text
       style={[
@@ -40,12 +38,13 @@ export function ThemeText({
         type === 'title' ? styles.title : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
-        size ? {fontSize: FONT_SIZES[size]} : undefined,
+        size ? { fontSize: FONT_SIZES[size] } : undefined,
         style,
       ]}
-      {...reset}
-    >{children}</Animated.Text>
-  );
+      {...reset}>
+      {children}
+    </Animated.Text>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -65,6 +64,6 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: FONT_SIZES.sm * 1.2,
     fontSize: FONT_SIZES.sm,
-    color: TEXT_COLORS.link
+    color: TEXT_COLORS.link,
   },
-});
+})
