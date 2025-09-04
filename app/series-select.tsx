@@ -10,11 +10,14 @@ import { Flex } from '@/components/layout/Flex'
 import { SPACING } from '@/constants/layout'
 import { TextInput } from 'react-native'
 import { uiStyles } from '@/assets/styles/ui'
-import { addSeries } from '@/db/queries/series'
+import userSeriesApi from '@/db/queries/series'
+import { useSQLiteContext } from 'expo-sqlite'
 
 export default function SeriesSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToSeriesSelect>()
+  const db = useSQLiteContext()
+  const { createSeries } = userSeriesApi(db)
   const seriesMap = useSeriesStore((state) => state.seriesMap)
   const addSeriesData = useSeriesStore((state) => state.addData)
   const [seriesList, setSeriesList] = useState<Series[]>([])
@@ -25,12 +28,12 @@ export default function SeriesSelect() {
   useEffect(() => {
     if (!params.brandId) return
     // console.log('series-select got brandId', params)
-    if (!seriesMap.has(params.brandId)) {
-      console.error(`brandId "${params.brandId}" is not exists`)
-      router.back()
-      return
-    }
-    setSeriesList(seriesMap.get(params.brandId)!)
+    // if (!seriesMap.has(params.brandId)) {
+    //   console.error(`brandId "${params.brandId}" is not exists`)
+    //   router.back()
+    //   return
+    // }
+    setSeriesList(seriesMap.get(params.brandId) || [])
   }, [seriesMap, params, router])
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function SeriesSelect() {
 
   const handleFinishPress = async () => {
     try {
-      const response = await addSeries(params.brandId, addSeriesText)
+      const response = await createSeries(params.brandId, addSeriesText)
       if (!response.success) return
       const { data } = response
       addSeriesData(data.brandId, [data])

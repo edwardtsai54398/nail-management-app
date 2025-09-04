@@ -51,16 +51,20 @@ export default function BrandSelect() {
     console.log('handleFinishPress')
     try {
       const response = await createBrand(addBrandText)
-      if (!response.success) return
+      if (!response.success) {
+        console.error(response.error)
+        return
+      }
       const brand = response.data
       setBrands([brand, ...brands])
       addSeries(brand.brandId, [])
       setIdSelected(response.data.brandId)
-      setIsAddBrandMode(false)
-      setAddBrandText('')
     } catch (e) {
       console.error('CREATE BRAND ERROR:')
       console.error(e)
+    } finally {
+      setIsAddBrandMode(false)
+      setAddBrandText('')
     }
   }
 

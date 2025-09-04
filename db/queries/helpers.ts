@@ -25,6 +25,9 @@ export const errorMsg = (e: any) => {
   if (typeof e === 'string') {
     return e
   }
+  if (typeof e === 'object' && 'message' in e && typeof e.message === 'string') {
+    return e.message
+  }
   return `Unknown Error`
 }
 
