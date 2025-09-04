@@ -1,11 +1,4 @@
-import {
-  memo,
-  useState,
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-  useCallback,
-} from 'react'
+import { memo, useState, forwardRef, useImperativeHandle, useMemo, useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import type { PolishColumnRef } from './types'
 import DetailInput from '@/components/ui/DetailInput'

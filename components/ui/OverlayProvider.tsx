@@ -6,7 +6,7 @@ import {
   useAnimatedValue,
   Dimensions,
 } from 'react-native'
-import {createContext, ReactNode, useState, useEffect, useCallback} from 'react'
+import { createContext, ReactNode, useState, useEffect, useCallback } from 'react'
 
 export const overlayStyles = StyleSheet.create({
   overlayContainer: {
@@ -38,7 +38,6 @@ export default function OverlayProvider({ children }: { children: ReactNode }) {
   const [drawerOpenCount, setDrawerOpenCount] = useState<number>(0)
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const opacity = useAnimatedValue(0)
-
 
   const register = () => {
     setDrawerOpenCount((c) => c + 1)

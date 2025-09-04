@@ -96,20 +96,20 @@ export default function (db: SQLiteDatabase) {
           seriesName: row.seriesName,
           colors: row.colorIds
             ? row.colorIds.split(',').map((cId, i) => ({
-              colorKey: cId,
-              name: row.colorNames?.split(',')[i] || ''
-            }))
+                colorKey: cId,
+                name: row.colorNames?.split(',')[i] || '',
+              }))
             : [],
           tags: row.tagIds
             ? row.tagIds.split(',').map((tId, i) => ({
-              tagId: tId,
-              name: row.tagNames?.split(',')[i] || ''
-            }))
+                tagId: tId,
+                name: row.tagNames?.split(',')[i] || '',
+              }))
             : [],
           polishType: {
             typeId: row.oPolishTypeId || row.uPolishTypeId!,
             name: row.oPolishTypeName || row.uPolishTypeName!,
-            isOfficial: row.oPolishTypeId ? true : false
+            isOfficial: row.oPolishTypeId ? true : false,
           },
           images: row.imgOrders
             ? row.imgOrders.split(',').map((imgOrder) => ({

@@ -68,8 +68,8 @@ export default function SeriesSelect() {
       setIsAddSeriesMode(false)
       setAddSeriesText('')
     } catch (e) {
-        console.error('CREATE_SERIES ERROR:')
-        console.error(e)
+      console.error('CREATE_SERIES ERROR:')
+      console.error(e)
     }
   }
   return (
