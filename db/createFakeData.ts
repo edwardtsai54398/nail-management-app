@@ -1,5 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite'
-import { insertInto } from './queries/helpers'
+import { insertInto, isDataExists } from './queries/helpers'
 import type { OfficialColorTypesSchema } from './schema'
 
 const fakeImages = [
@@ -64,20 +64,6 @@ const userPolishItems = [
 ]
 
 export default async function (db: SQLiteDatabase) {
-  const isDataExists = async (table: string, col: string, val: string): Promise<boolean> => {
-    const row = await db.getFirstAsync<{ isExist: number }>(
-      `SELECT EXISTS(SELECT 1 FROM ${table} WHERE ${col} = ?) as isExist`,
-      val,
-    )
-    const exists = !!row?.isExist
-    if (exists) {
-      console.log(`${val} exists in ${table}`)
-    } else {
-      console.log(`${val} NOT exists in ${table}`)
-    }
-
-    return exists
-  }
   try {
     const row = await db.getFirstAsync<{ id: string }>(`SELECT id FROM users`)
     if (!row) return
@@ -87,7 +73,7 @@ export default async function (db: SQLiteDatabase) {
     for (const i in userPolishItems) {
       //新增品牌
       const brandId = `0${i}`
-      if (!(await isDataExists('user_brands', 'brand_id', brandId))) {
+      if (!(await isDataExists(db, 'user_brands', 'brand_id', brandId))) {
         await db.runAsync(
           insertInto('user_brands')
             .colVal(['brand_id', brandId])
@@ -101,7 +87,7 @@ export default async function (db: SQLiteDatabase) {
       for (const j in series) {
         //新增系列
         const seriesId = `${brandId}-0${j}`
-        if (!(await isDataExists('user_polish_series', 'series_id', seriesId))) {
+        if (!(await isDataExists(db, 'user_polish_series', 'series_id', seriesId))) {
           await db.runAsync(
             insertInto('user_polish_series')
               .colVal(['series_id', seriesId])
@@ -116,7 +102,7 @@ export default async function (db: SQLiteDatabase) {
 
         if (!series[j].isTypeOfficial) {
           //新增使用者自建 polishTypes
-          if (!(await isDataExists('user_polish_types', 'polish_type_id', seriesId))) {
+          if (!(await isDataExists(db, 'user_polish_types', 'polish_type_id', seriesId))) {
             await db.runAsync(
               insertInto('user_polish_types')
                 .colVal(['polish_type_id', seriesId])
@@ -131,7 +117,7 @@ export default async function (db: SQLiteDatabase) {
         for (const k in items) {
           //新增色膠
           const itemId = `0${i}-0${j}-0${k}`
-          if (!(await isDataExists('user_polish_items', 'polish_id', itemId))) {
+          if (!(await isDataExists(db, 'user_polish_items', 'polish_id', itemId))) {
             await db.runAsync(
               insertInto('user_polish_items')
                 .colVal(['polish_id', itemId])
@@ -176,11 +162,7 @@ export default async function (db: SQLiteDatabase) {
             const tags = items[k].tags
             for (const q in tags) {
               const tag = tags[q]
-              const tagRow = await db.getFirstAsync<{ isExist: number }>(
-                `SELECT EXISTS(SELECT 1 FROM user_tags WHERE tag_id = ?) as isExist`,
-                tag,
-              )
-              if (!tagRow?.isExist) {
+              if (!(await isDataExists(db, 'user_tags', 'tag_id', tag))) {
                 await db.runAsync(
                   insertInto('user_tags')
                     .colVal(['tag_id', tag])

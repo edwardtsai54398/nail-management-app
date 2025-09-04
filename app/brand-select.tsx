@@ -1,21 +1,24 @@
-import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
-import ThemeButton from '@/components/ui/ThemeButton'
-import AntDesign from '@expo/vector-icons/AntDesign'
 import { useCallback, useEffect, useState } from 'react'
 import { TextInput } from 'react-native'
-import { SPACING } from '@/constants/layout'
+import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
+import AntDesign from '@expo/vector-icons/AntDesign'
+import useBrandApi from '@/db/queries/brand'
 import { useBrandStore } from '@/store/brands'
+import { useSeriesStore } from '@/store/series'
+import type { ParamsToBrandSelect } from '@/types/routes'
+import type { Brand } from '@/types/ui'
+import ThemeButton from '@/components/ui/ThemeButton'
+import { SPACING } from '@/constants/layout'
 import { Flex } from '@/components/layout/Flex'
 import SelectList from '@/components/ui/SelectList'
-import { ParamsToBrandSelect } from '@/types/routes'
 import { uiStyles } from '@/assets/styles/ui'
-import { addBrand } from '@/db/queries/brand'
-import { useSeriesStore } from '@/store/series'
-import { Brand } from '@/types/ui'
 
 export default function BrandSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToBrandSelect>()
+  const db = useSQLiteContext()
+  const { createBrand } = useBrandApi(db)
   const brands = useBrandStore((state) => state.data)
   const setBrands = useBrandStore((state) => state.setData)
   const addSeries = useSeriesStore((state) => state.addData)
@@ -47,7 +50,7 @@ export default function BrandSelect() {
   const handleFinishPress = async () => {
     console.log('handleFinishPress')
     try {
-      const response = await addBrand(addBrandText)
+      const response = await createBrand(addBrandText)
       if (!response.success) return
       const brand = response.data
       setBrands([brand, ...brands])

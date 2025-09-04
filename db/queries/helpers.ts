@@ -1,3 +1,4 @@
+import { SQLiteDatabase } from 'expo-sqlite'
 import { Tables } from '@/db/schema'
 
 export const insertInto = (tableName: keyof Tables) => {
@@ -25,4 +26,24 @@ export const errorMsg = (e: any) => {
     return e
   }
   return `Unknown Error`
+}
+
+export const isDataExists = async (
+  db: SQLiteDatabase,
+  table: string,
+  col: string,
+  val: string,
+): Promise<boolean> => {
+  const row = await db.getFirstAsync<{ isExist: number }>(
+    `SELECT EXISTS(SELECT 1 FROM ${table} WHERE ${col} = ?) as isExist`,
+    val,
+  )
+  const exists = !!row?.isExist
+  if (exists) {
+    console.log(`${val} exists in ${table}`)
+  } else {
+    console.log(`${val} NOT exists in ${table}`)
+  }
+
+  return exists
 }

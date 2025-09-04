@@ -19,6 +19,7 @@ import {
   uTagsTableBlueprint,
 } from './schema'
 import createFakeData from './createFakeData'
+import { isDataExists } from '@/db/queries/helpers'
 
 const OFFICIAL_POLISH_TYPES = [
   { key: 'CAT_EYE', tw: '貓眼' },
@@ -89,11 +90,7 @@ export async function runMigrations(db: SQLiteDatabase) {
     //檢查是否系統色膠種類已經存在，否則寫入
     // const user = await db.getFirstAsync<UserSchema>(`SELECT id FROM users`)
     for (const item of OFFICIAL_POLISH_TYPES) {
-      const exist = await db.getFirstAsync<{ isExist: number }>(
-        `SELECT EXISTS(SELECT 1 FROM official_polish_types WHERE type_key = ?) as isExist`,
-        item.key,
-      )
-      if (exist!.isExist === 0) {
+      if (!(await isDataExists(db, 'official_polish_types', 'type_key', item.key))) {
         await db.runAsync(`INSERT INTO official_polish_types (type_key, zh_tw) VALUES (?, ?)`, [
           item.key,
           item.tw,
@@ -120,13 +117,7 @@ export async function runMigrations(db: SQLiteDatabase) {
     await db.execAsync(generateCreateTable('official_color_types', oColorTypesTableBlueprint))
     //檢查是否系統顏色已經存在，否則寫入
     for (const item of OFFICIAL_COLOR_TYPES) {
-      const exist = await db.getFirstAsync<{ isExist: number }>(
-        `SELECT EXISTS(SELECT 1 FROM official_color_types WHERE color_key = ?) as isExist`,
-        item.key,
-      )
-      // console.log(`if ${item.keyName} exists`, exist);
-
-      if (exist!.isExist === 0) {
+      if (!(await isDataExists(db, 'official_color_types', 'color_key', item.key))) {
         await db.runAsync(`INSERT INTO official_color_types (color_key, zh_tw) VALUES (?, ?)`, [
           item.key,
           item.tw,
