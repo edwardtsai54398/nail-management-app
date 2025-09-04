@@ -21,7 +21,7 @@ export default function AddPolish() {
     seriesId: '',
     colorName: '',
     polishType: null,
-    colors: [],
+    colorIds: [],
     stock: 1,
     isFavorites: false,
     tags: [],

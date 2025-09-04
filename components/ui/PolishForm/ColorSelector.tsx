@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useState, memo
 import { StyleSheet, View } from 'react-native'
 import { PolishColumnRef } from '@/components/ui/PolishForm/types'
 import { useSQLiteContext } from 'expo-sqlite'
+import type { Color } from '@/types/ui'
 import useColorsApi from '@/db/queries/colors'
 import { SPACING } from '@/constants/layout'
 import { LINE_COLORS } from '@/constants/Colors'
@@ -16,8 +17,8 @@ type ColorSelectorProps = {
 const ColorSelector = forwardRef<PolishColumnRef<string[]>, ColorSelectorProps>((props, ref) => {
   const db = useSQLiteContext()
   const { getOfficialColors } = useColorsApi(db)
-  const [colorsSelected, setSelected] = useState<string[]>(props.values)
-  const [colorTypes, setColorTypes] = useState<string[]>([])
+  const [colorIdsSelected, setIdsSelected] = useState<string[]>(props.values)
+  const [colorTypes, setColorTypes] = useState<Color[]>([])
 
   useEffect(() => {
     getOfficialColors().then((response) => {
@@ -27,28 +28,27 @@ const ColorSelector = forwardRef<PolishColumnRef<string[]>, ColorSelectorProps>(
   }, [])
 
   const isColorSelected = useCallback(
-    (color: string) => {
-      return colorsSelected.includes(color)
-      // return true
+    (color: Color) => {
+      return colorIdsSelected.includes(color.colorKey)
     },
-    [colorsSelected],
+    [colorIdsSelected],
   )
 
-  const renderTag = useCallback((color: string) => color, [])
+  const renderTag = useCallback((color: Color) => color.name, [])
   const handleTagPress = useCallback(
-    (color: string) => {
-      if (colorsSelected.includes(color)) {
-        setSelected((prev) => prev.filter((c) => c !== color))
+    (color: Color) => {
+      if (colorIdsSelected.includes(color.colorKey)) {
+        setIdsSelected((prev) => prev.filter((c) => c !== color.colorKey))
       } else {
-        setSelected((prev) => [...prev, color])
+        setIdsSelected((prev) => [...prev, color.colorKey])
       }
     },
-    [colorsSelected],
+    [colorIdsSelected],
   )
 
   useImperativeHandle(ref, () => ({
-    getValue: () => colorsSelected,
-    setValue: (colors) => setSelected(colors),
+    getValue: () => colorIdsSelected,
+    setValue: (colors) => setIdsSelected(colors),
   }))
   return (
     <View style={styles.container}>

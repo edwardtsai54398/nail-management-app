@@ -5,7 +5,7 @@ export type PolishFormValues = {
   seriesId: string
   colorName: string
   polishType: PolishType | null
-  colors: Pick<Polish, 'colors'>['colors']
+  colorIds: string[]
   stock: number
   isFavorites: boolean
   tags: Tag[]

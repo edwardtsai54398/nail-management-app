@@ -44,7 +44,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
       seriesId: seriesRef.current?.getValue() || '',
       colorName: coloNameRef.current?.getValue() || '',
       polishType: polishTypesRef.current?.getValue() || null,
-      colors: colorSelectorRef.current?.getValue() || [],
+      colorIds: colorSelectorRef.current?.getValue() || [],
       stock: stockRef.current?.getValue() || 0,
       isFavorites: favoritesRef.current?.getValue() || false,
       tags: tagsRef.current?.getValue() || [],
@@ -80,7 +80,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
       <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
       <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
       <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType} />
-      <ColorSelector ref={colorSelectorRef} values={initValRef.current.colors} />
+      <ColorSelector ref={colorSelectorRef} values={initValRef.current.colorIds} />
       <View style={styles.stockFavoriteWrapper}>
         <Row>
           <Col base={7} style={styles.stockWrapper}>
