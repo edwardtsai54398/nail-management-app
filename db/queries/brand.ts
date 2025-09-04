@@ -1,19 +1,7 @@
-import type { Brand } from '@/types/ui'
-
-export async function getBrands(): Promise<{ data: Brand[] }> {
-  const brands = [
-    { name: 'Cleto', id: '02ee41c7-37b6-bed2-7836-807452911ddb' },
-    { name: 'THE FAVORI', id: 'THE FAVORI' },
-    { name: 'HE', id: 'HE' },
-  ]
-
-  return {
-    data: brands.map((b) => ({
-      brandId: b.id,
-      brandName: b.name,
-    })),
-  }
-}
+import { SQLiteDatabase } from 'expo-sqlite'
+import { errorMsg } from './helpers'
+import type { Brand, QueryResult } from '@/types/ui'
+import { UserBrandsSchema } from '@/db/schema'
 
 export async function addBrand(brandName: string): Promise<{ data: Brand; success: boolean }> {
   return {
@@ -23,4 +11,27 @@ export async function addBrand(brandName: string): Promise<{ data: Brand; succes
       brandName,
     },
   }
+}
+
+export default function (db: SQLiteDatabase) {
+  const getBrands = async (): Promise<QueryResult<Brand[]>> => {
+    try {
+      const sql = `SELECT * FROM user_brands`
+      const rows = await db.getAllAsync<UserBrandsSchema>(sql)
+      return {
+        success: true,
+        data: rows.map((b) => ({
+          brandId: b.brand_id,
+          brandName: b.brand_name,
+        })),
+      }
+    } catch (e) {
+      console.error('API_GET_BRANDS ERROR', e)
+      return {
+        success: false,
+        error: errorMsg(e),
+      }
+    }
+  }
+  return { getBrands }
 }

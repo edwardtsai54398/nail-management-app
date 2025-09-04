@@ -1,8 +1,6 @@
 import { Tables } from '@/db/schema'
 
-export const insertInto = (
-  tableName: keyof Tables,
-) => {
+export const insertInto = (tableName: keyof Tables) => {
   let str = `INSERT INTO ${tableName} `
   let colArray: string[] = []
   let valArray: (string | number)[] = []
@@ -21,4 +19,10 @@ export const insertInto = (
   }
 
   return { colVal }
+}
+export const errorMsg = (e: any) => {
+  if (typeof e === 'string') {
+    return e
+  }
+  return `Unknown Error`
 }

@@ -2,13 +2,13 @@ import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import PolishCard from '@/components/ui/PolishCard'
 import usePolishApi from '@/db/queries/polishItem'
+import useBrandApi from '@/db/queries/brand'
 import useTagsApi from '@/db/queries/tags'
 import { useSQLiteContext } from 'expo-sqlite'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
 import { Polish, SectionData } from '@/types/ui'
 import { useEffect, useState } from 'react'
 import { SectionList, StyleSheet, View } from 'react-native'
-import { getBrands } from '@/db/queries/brand'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import FloatingBtn from '@/components/ui/FloatingBtn'
@@ -34,6 +34,7 @@ export default function Index() {
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext()
   const { getPolishList } = usePolishApi(db)
+  const { getBrands } = useBrandApi(db)
   const { getTags } = useTagsApi(db)
   useEffect(() => {
     getPolishList().then((result) => {
@@ -48,6 +49,8 @@ export default function Index() {
       }
     })
     getBrands().then((result) => {
+      if (!result.success) return
+      // console.log('All brands', result.data)
       setBrandsState(result.data)
     })
     getTags().then((res) => {

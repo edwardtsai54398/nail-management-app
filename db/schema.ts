@@ -68,19 +68,19 @@ export const userTableBlueprint: TableBlueprint<UserSchema> = {
 }
 
 /*
-* user_polish_stocks 使用者的色膠庫存
-* ========================================
-* stock_id
-* user_id
-* official_polish_id 如果該色膠綁定官方的話會紀錄，沒有的話則空值。關聯到官方色膠色號、色膠種類
-* user_polish_id 使用者自定義該色膠的色膠色號、色膠種類。創建時就選擇官方的話會是空值
-* note 備註
-* stock 庫存量
-* is_favorite 是否是最愛
-* created_at
-* last_updated_at
-* ========================================
-*/
+ * user_polish_stocks 使用者的色膠庫存
+ * ========================================
+ * stock_id
+ * user_id
+ * official_polish_id 如果該色膠綁定官方的話會紀錄，沒有的話則空值。關聯到官方色膠色號、色膠種類
+ * user_polish_id 使用者自定義該色膠的色膠色號、色膠種類。創建時就選擇官方的話會是空值
+ * note 備註
+ * stock 庫存量
+ * is_favorite 是否是最愛
+ * created_at
+ * last_updated_at
+ * ========================================
+ */
 
 export interface UserPolishStocksSchema {
   stock_id: string
@@ -95,15 +95,25 @@ export interface UserPolishStocksSchema {
 }
 
 export const uPolishStocksTableBlueprint: TableBlueprint<UserPolishStocksSchema> = {
-  stock_id: {type: 'TEXT', primaryKey: true, notNull: true},
-  user_id: {type:"TEXT", notNull: true, foreignKey: {table: 'users', column: 'id', onDelete: 'CASCADE'}},
-  official_polish_id: {type: "TEXT", foreignKey: {table: 'official_polish_items', column: 'polish_id', onDelete: 'SET NULL'}},
-  user_polish_id: {type: "TEXT", foreignKey: {table: 'user_polish_items', column: 'polish_id', onDelete: 'SET NULL'}},
-  note: {type: 'TEXT'},
-  stock: {type: "INTEGER", notNull: true},
-  is_favorite: {type: "INTEGER", default: 0},
-  created_at: {type: "TEXT", default: '(CURRENT_TIMESTAMP)', notNull: true},
-  last_updated_at: {type: "TEXT", default: '(CURRENT_TIMESTAMP)', notNull: true},
+  stock_id: { type: 'TEXT', primaryKey: true, notNull: true },
+  user_id: {
+    type: 'TEXT',
+    notNull: true,
+    foreignKey: { table: 'users', column: 'id', onDelete: 'CASCADE' },
+  },
+  official_polish_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'official_polish_items', column: 'polish_id', onDelete: 'SET NULL' },
+  },
+  user_polish_id: {
+    type: 'TEXT',
+    foreignKey: { table: 'user_polish_items', column: 'polish_id', onDelete: 'SET NULL' },
+  },
+  note: { type: 'TEXT' },
+  stock: { type: 'INTEGER', notNull: true },
+  is_favorite: { type: 'INTEGER', default: 0 },
+  created_at: { type: 'TEXT', default: '(CURRENT_TIMESTAMP)', notNull: true },
+  last_updated_at: { type: 'TEXT', default: '(CURRENT_TIMESTAMP)', notNull: true },
 }
 
 /**
@@ -120,7 +130,7 @@ export const uPolishStocksTableBlueprint: TableBlueprint<UserPolishStocksSchema>
  * created_at
  * last_updated_at
  * =========================================================
-*/
+ */
 
 export interface UserPolishItemsSchema {
   polish_id: string
@@ -209,7 +219,7 @@ export const polishImagesTableBlueprint: TableBlueprint<PolishImagesSchema> = {
 }
 
 /**
- * polish_item_colors 色膠顏色中介表 
+ * polish_item_colors 色膠顏色中介表
  * 備註：一個色膠可多選顏色
  * =======================================================
  * id
@@ -251,7 +261,7 @@ export const polishItemsColorsTableBlueprint: TableBlueprint<PolishItemColorsSch
  * created_at
  * last_updated_at
  * ========================================
-*/
+ */
 
 export interface UserPolishSeriesSchema {
   series_id: string
@@ -275,11 +285,11 @@ export const uPolishSeriesTableBlueprint: TableBlueprint<UserPolishSeriesSchema>
   series_name: { type: 'TEXT', notNull: true },
   official_brand_id: {
     type: 'TEXT',
-    foreignKey: {table: 'official_brands', column:'brand_id', onDelete: 'CASCADE'}
+    foreignKey: { table: 'official_brands', column: 'brand_id', onDelete: 'CASCADE' },
   },
   user_brand_id: {
     type: 'TEXT',
-    foreignKey: {table: 'user_brands', column:'brand_id', onDelete: 'CASCADE'}
+    foreignKey: { table: 'user_brands', column: 'brand_id', onDelete: 'CASCADE' },
   },
   official_series_id: {
     type: 'TEXT',
@@ -303,7 +313,7 @@ export const uPolishSeriesTableBlueprint: TableBlueprint<UserPolishSeriesSchema>
  * ==============================
  */
 
-interface UserBrandsSchema {
+export interface UserBrandsSchema {
   brand_id: string
   user_id: string
   brand_name: string
@@ -443,7 +453,7 @@ export const oBrandsTableBlueprint: TableBlueprint<OfficialBrandsSchema> = {
  * type_key 色膠種類的 key
  * zh_tw
  * ===================================
- * 
+ *
  * key 對照表
  * CAT_EYE = 貓眼
  * PEARLESCENT = 珠光
@@ -534,7 +544,7 @@ export const polishItemTagsTableBlueprint: TableBlueprint<PolishItemTagsSchema> 
  * color_key 顏色種類的 key
  * zh_tw 中文名稱
  * =========================================
- * 
+ *
  * key 對照表
  * RED = 紅
  * ORANGE = 橘
