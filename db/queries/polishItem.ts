@@ -1,34 +1,36 @@
 import { SQLiteDatabase } from 'expo-sqlite'
+import * as Crypto from 'expo-crypto'
 import { type Polish, Series, QueryResult } from '@/types/ui'
+import { errorMsg, isDataExists } from '@/db/queries/helpers'
+import { getUserId } from '@/db/queries/users'
 
 type PolishListResult = {
   series: Series[]
   polishItems: Polish[][]
 }
 
-type PolishQueryRow = {
-  polishId: string
-  polishName: string
-  stock: number
-  isFavorites: number
-  note: string | null
-  uPolishTypeId: string | null
-  uPolishTypeName: string | null
-  oPolishTypeId: string | null
-  oPolishTypeName: string | null
-  colorIds: string | null
-  colorNames: string | null
-  tagIds: string | null
-  tagNames: string | null
-  imgURLs: string | null
-  imgOrders: string | null
-  seriesId: string
-  seriesName: string
-  brandId: string
-  brandName: string
-}
-
 export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<PolishListResult>> => {
+  type PolishQueryRow = {
+    polishId: string
+    polishName: string
+    stock: number
+    isFavorites: number
+    note: string | null
+    uPolishTypeId: string | null
+    uPolishTypeName: string | null
+    oPolishTypeId: string | null
+    oPolishTypeName: string | null
+    colorIds: string | null
+    colorNames: string | null
+    tagIds: string | null
+    tagNames: string | null
+    imgURLs: string | null
+    imgOrders: string | null
+    seriesId: string
+    seriesName: string
+    brandId: string
+    brandName: string
+  }
   const sql = `
         SELECT
             uPS.stock_id AS polishId,
@@ -108,7 +110,7 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
         polishType: {
           typeId: row.oPolishTypeId || row.uPolishTypeId!,
           name: row.oPolishTypeName || row.uPolishTypeName!,
-          isOfficial: row.oPolishTypeId ? true : false,
+          isOfficial: !!row.oPolishTypeId,
         },
         images: row.imgOrders
           ? row.imgOrders.split(',').map((imgOrder) => ({
@@ -135,5 +137,226 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
     console.error('GET_POLISH_LIST ERROR:')
     console.error(e)
     return { success: false, error: e?.message || 'Unknown Error' }
+  }
+}
+
+export type CreatePolishQuery = {
+  seriesId: string
+  polishName: string
+  polishType: {
+    id: string
+    isOfficial: boolean
+  }
+  colorIds: string[]
+  stock: number
+  isFavorites?: boolean
+  tagIds?: string[]
+  note?: string
+  images: {
+    order: number
+    path: string
+  }[]
+}
+type CreateTagResult = {
+  polishId: string
+}
+
+export const createPolishItem = async (
+  db: SQLiteDatabase,
+  query: CreatePolishQuery,
+): Promise<QueryResult<CreateTagResult>> => {
+  //檢查參數
+  const lackParamsError = (params: string[]) =>
+    `Missing parameters: ${params.map((p) => `"${p}"`).join(', ')}`
+  const missingParams = []
+  if (!query.seriesId) missingParams.push('seriesId')
+  if (!query.polishName) missingParams.push('polishName')
+  if (!query.polishType) missingParams.push('polishType')
+  if (!query.colorIds) missingParams.push('colorIds')
+  if (!('stock' in query)) missingParams.push('stock')
+  if (!('images' in query)) missingParams.push('images')
+  if (query.polishType && (query?.polishType.id || !('isOfficial' in query.polishType))) {
+    if (!query.polishType.id) missingParams.push('polishType.id')
+    if (!('isOfficial' in query.polishType)) missingParams.push('polishType.isOfficial')
+  }
+  if (query.images) {
+    let missing = false
+    for (const img of query.images) {
+      if (missing) break
+      if (!('order' in img)) {
+        missingParams.push('images.order')
+        missing = true
+      }
+      if (!('path' in img)) {
+        missingParams.push('images.path')
+        missing = true
+      }
+    }
+  }
+
+  if (missingParams.length)
+    return {
+      success: false,
+      error: lackParamsError(missingParams),
+    }
+  if (query.colorIds.length === 0)
+    return {
+      success: false,
+      error: 'colorIds.length should greater than 0',
+    }
+  if (query.images.length === 0)
+    return {
+      success: false,
+      error: 'images.length should greater than 0',
+    }
+
+  //=======================================
+  try {
+    //檢查 ID 是否存在
+    const checkSeriesSql = `SELECT S.series_id, S.series_name, P.color_name FROM user_polish_series S JOIN user_polish_items P ON P.user_series_id = S.series_id WHERE S.series_id = ?`
+    const seriesRows = await db.getAllAsync<{
+      series_id: string
+      color_name: string
+      series_name: string
+    }>(checkSeriesSql, query.seriesId)
+    if (seriesRows.length === 0)
+      return {
+        success: false,
+        error: `Not found seriesId: "${query.seriesId}"`,
+      }
+    const matchSeries = seriesRows.find((s) => s.color_name === query.polishName)
+    if (matchSeries)
+      return {
+        success: false,
+        error: `色號名稱已存在在系列 ${matchSeries.series_name} 中`,
+      }
+    if (
+      !query.polishType.isOfficial &&
+      !(await isDataExists(db, 'user_polish_types', 'polish_type_id', query.polishType.id))
+    )
+      return {
+        success: false,
+        error: `polishTypeId: "${query.polishType.id}" is not a custom polish type`,
+      }
+    if (
+      query.polishType.isOfficial &&
+      !(await isDataExists(db, 'official_polish_types', 'type_key', query.polishType.id))
+    )
+      return {
+        success: false,
+        error: `polishTypeId: "${query.polishType.id}" is not a official polish type`,
+      }
+    const colorKeyExistsSql = `SELECT color_key FROM official_color_types WHERE color_key IN (${query.colorIds.map(() => '?').join(',')})`
+    const validColorRows = await db.getAllAsync<{ color_key: string }>(
+      colorKeyExistsSql,
+      query.colorIds,
+    )
+    if (validColorRows.length < query.colorIds.length) {
+      const notValid: string[] = []
+      query.colorIds.forEach((id) => {
+        if (!validColorRows.some((color) => color.color_key === id)) {
+          notValid.push(id)
+        }
+      })
+      return {
+        success: false,
+        error: `colorIds: ${notValid.map((id) => `"${id}"`).join(', ')} not valid`,
+      }
+    }
+    if (query.tagIds && query.tagIds.length) {
+      const tagIdExistsSql = `SELECT tag_id FROM user_tags WHERE tag_id IN (${query.tagIds.map(() => '?').join(',')})`
+      const validTagRows = await db.getAllAsync<{ tag_id: string }>(tagIdExistsSql, query.tagIds)
+      if (validTagRows.length < query.tagIds.length) {
+        const notValid: string[] = []
+        query.tagIds.forEach((id) => {
+          if (!validTagRows.some((tag) => tag.tag_id === id)) {
+            notValid.push(id)
+          }
+        })
+        return {
+          success: false,
+          error: `tagIds: ${notValid.map((id) => `"${id}"`).join(', ')} not valid`,
+        }
+      }
+    }
+    //=======================================
+    //寫入 DB
+    const userResult = await getUserId(db)
+    if (!userResult.success) return userResult
+    const userId = userResult.data
+    const stockId = Crypto.randomUUID()
+    const polishId = Crypto.randomUUID()
+    await db.withTransactionAsync(async () => {
+      //新增色膠
+      await db.runAsync(
+        `INSERT INTO 
+            user_polish_items (
+              polish_id, 
+              user_id, 
+              color_name, 
+              user_series_id, 
+              ${query.polishType.isOfficial ? 'official_polish_type' : 'user_polish_type'}
+            ) VALUES (?,?,?,?,?)`,
+        [polishId, userId, query.polishName, query.seriesId, query.polishType.id],
+      )
+      // console.log('user_polish_items executed')
+      await db.runAsync(
+        `INSERT INTO user_polish_stocks (
+            stock_id, 
+            user_id, 
+            user_polish_id,
+            note,
+            stock,
+            is_favorite
+         ) VALUES (?,?,?,?,?,?)`,
+        [stockId, userId, polishId, query.note || '', query.stock, query.isFavorites ? 0 : 1],
+      )
+      // console.log('user_polish_stocks executed')
+      //新增圖片
+      for (const img of query.images) {
+        const imgId = Crypto.randomUUID()
+        await db.runAsync(
+          `INSERT INTO polish_images (
+            image_id,
+            user_id,
+            stock_id,
+            image_order,
+            url
+            ) VALUES (?,?,?,?,?)`,
+          [imgId, userId, stockId, img.order, img.path],
+        )
+      }
+      // console.log('polish_images executed')
+      //新增 Tags (polish_item_tags)
+      if (query.tagIds) {
+        for (const tId of query.tagIds) {
+          const id = Crypto.randomUUID()
+          await db.runAsync(`INSERT INTO polish_item_tags (id, stock_id, tag_id) VALUES (?,?,?)`, [
+            id,
+            stockId,
+            tId,
+          ])
+        }
+        // console.log('polish_item_tags executed')
+      }
+
+      //新增顏色 (polish_item_colors)
+      for (const cId of query.colorIds) {
+        const id = Crypto.randomUUID()
+        await db.runAsync(
+          `INSERT INTO polish_item_colors (id, stock_id, color_key) VALUES (?,?,?)`,
+          [id, stockId, cId],
+        )
+      }
+    })
+    return {
+      success: true,
+      data: { polishId: stockId },
+    }
+  } catch (e) {
+    return {
+      success: false,
+      error: errorMsg(e),
+    }
   }
 }

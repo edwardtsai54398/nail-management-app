@@ -20,12 +20,6 @@ export const isDataExists = async (
     `SELECT EXISTS(SELECT 1 FROM ${table} WHERE ${col} = ?) as isExist`,
     val,
   )
-  const exists = !!row?.isExist
-  if (exists) {
-    console.log(`${val} exists in ${table}`)
-  } else {
-    console.log(`${val} NOT exists in ${table}`)
-  }
 
-  return exists
+  return !!row?.isExist
 }
