@@ -95,15 +95,15 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
         seriesName: row.seriesName,
         colors: row.colorIds
           ? row.colorIds.split(',').map((cId, i) => ({
-            colorKey: cId,
-            name: row.colorNames?.split(',')[i] || '',
-          }))
+              colorKey: cId,
+              name: row.colorNames?.split(',')[i] || '',
+            }))
           : [],
         tags: row.tagIds
           ? row.tagIds.split(',').map((tId, i) => ({
-            tagId: tId,
-            name: row.tagNames?.split(',')[i] || '',
-          }))
+              tagId: tId,
+              name: row.tagNames?.split(',')[i] || '',
+            }))
           : [],
         polishType: {
           typeId: row.oPolishTypeId || row.uPolishTypeId!,
@@ -112,9 +112,9 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
         },
         images: row.imgOrders
           ? row.imgOrders.split(',').map((imgOrder) => ({
-            order: Number(imgOrder),
-            url: row.imgURLs!.split(',')[Number(imgOrder) - 1],
-          }))
+              order: Number(imgOrder),
+              url: row.imgURLs!.split(',')[Number(imgOrder) - 1],
+            }))
           : [],
       }
       polishItemsGroupBySeries.set(row.seriesId, [

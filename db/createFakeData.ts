@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite'
-import { insertInto, isDataExists } from './queries/helpers'
-import type { OfficialColorTypesSchema } from './schema'
+import { isDataExists } from './queries/helpers'
+import { OfficialColorTypesSchema, Tables } from './schema'
 
 const fakeImages = [
   'https://picsum.photos/id/237/200/300',
@@ -62,6 +62,27 @@ const userPolishItems = [
     ],
   },
 ]
+
+const insertInto = (tableName: keyof Tables) => {
+  let str = `INSERT INTO ${tableName} `
+  let colArray: string[] = []
+  let valArray: (string | number)[] = []
+  function colVal(colVals: [string, string | number]) {
+    colArray.push(colVals[0])
+    valArray.push(colVals[1])
+    return { colVal, end }
+  }
+  function end() {
+    str += `(`
+    str += colArray.join(', ')
+    str += `) VALUES (`
+    str += valArray.map((val) => (typeof val === 'string' ? `'${val}'` : val)).join(', ')
+    str += `);`
+    return str
+  }
+
+  return { colVal }
+}
 
 export default async function (db: SQLiteDatabase) {
   try {

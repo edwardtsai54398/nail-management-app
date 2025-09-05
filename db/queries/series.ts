@@ -1,7 +1,7 @@
 import { SQLiteDatabase } from 'expo-sqlite'
 import * as Crypto from 'expo-crypto'
 import { QueryResult, Series } from '@/types/ui'
-import { errorMsg, insertInto, isDataExists } from '@/db/queries/helpers'
+import { errorMsg, isDataExists } from '@/db/queries/helpers'
 import { getUserId } from '@/db/queries/users'
 import { UserBrandsSchema } from '@/db/schema'
 
@@ -32,14 +32,9 @@ export const createSeries = async (
 
     const userId = userResult.data
     const seriesId = Crypto.randomUUID()
-    const sql = insertInto('user_polish_series')
-      .colVal(['series_id', seriesId])
-      .colVal(['user_id', userId])
-      .colVal(['series_name', seriesName])
-      .colVal(['user_brand_id', brandId])
-      .end()
+    const sql = `INSERT INTO user_polish_series (series_id, user_id, series_name, user_brand_id) VALUES (?, ?, ?, ?)`
 
-    await db.runAsync(sql)
+    await db.runAsync(sql, [seriesId, userId, seriesName, brandId])
 
     return {
       success: true,

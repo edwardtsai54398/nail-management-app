@@ -1,7 +1,7 @@
 import { SQLiteDatabase } from 'expo-sqlite'
 import { PolishType, QueryResult } from '@/types/ui'
 import * as Crypto from 'expo-crypto'
-import { errorMsg, insertInto, isDataExists } from '@/db/queries/helpers'
+import { errorMsg, isDataExists } from '@/db/queries/helpers'
 import { getUserId } from '@/db/queries/users'
 import { OfficialPolishTypesSchema, UserPolishTypesSchema } from '@/db/schema'
 
@@ -40,7 +40,10 @@ export const getAllPolishTypes = async (db: SQLiteDatabase): Promise<QueryResult
   }
 }
 
-export const createPolishType = async (db: SQLiteDatabase, typeName: string): Promise<QueryResult<PolishType>> => {
+export const createPolishType = async (
+  db: SQLiteDatabase,
+  typeName: string,
+): Promise<QueryResult<PolishType>> => {
   try {
     if (await isDataExists(db, 'user_polish_types', 'type_name', typeName)) {
       return {
@@ -58,12 +61,8 @@ export const createPolishType = async (db: SQLiteDatabase, typeName: string): Pr
     if (!userResult.success) return userResult
     const userId = userResult.data
     const typeId = Crypto.randomUUID()
-    const sql = insertInto('user_polish_types')
-      .colVal(['polish_type_id', typeId])
-      .colVal(['user_id', userId])
-      .colVal(['type_name', typeName])
-      .end()
-    await db.runAsync(sql)
+    const sql = `INSERT INTO user_polish_types (polish_type_id, user_id, type_name) VALUES (?,?,?)`
+    await db.runAsync(sql, [typeId, userId, typeName])
 
     return {
       success: true,

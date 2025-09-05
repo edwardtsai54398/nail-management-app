@@ -1,10 +1,9 @@
 import { SQLiteDatabase } from 'expo-sqlite'
 import * as Crypto from 'expo-crypto'
-import { errorMsg, insertInto, isDataExists } from './helpers'
+import { errorMsg, isDataExists } from './helpers'
 import type { Brand, QueryResult } from '@/types/ui'
 import { UserBrandsSchema } from '@/db/schema'
 import { getUserId } from '@/db/queries/users'
-
 
 export const getBrands = async (db: SQLiteDatabase): Promise<QueryResult<Brand[]>> => {
   try {
@@ -26,7 +25,10 @@ export const getBrands = async (db: SQLiteDatabase): Promise<QueryResult<Brand[]
   }
 }
 
-export const createBrand = async (db: SQLiteDatabase, brandName: string): Promise<QueryResult<Brand>> => {
+export const createBrand = async (
+  db: SQLiteDatabase,
+  brandName: string,
+): Promise<QueryResult<Brand>> => {
   try {
     if (await isDataExists(db, 'user_brands', 'brand_name', brandName)) {
       return {
@@ -42,12 +44,8 @@ export const createBrand = async (db: SQLiteDatabase, brandName: string): Promis
       }
     const userId = userResult.data
     const brandId = Crypto.randomUUID()
-    const sql = insertInto('user_brands')
-      .colVal(['brand_id', brandId])
-      .colVal(['user_id', userId])
-      .colVal(['brand_name', brandName])
-      .end()
-    await db.runAsync(sql)
+    const sql = `INSERT INTO user_brands (brand_id, user_id, brand_name) VALUES (?, ?, ?)`
+    await db.runAsync(sql, [brandId, userId, brandName])
     return {
       success: true,
       data: { brandId, brandName },
