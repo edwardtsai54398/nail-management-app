@@ -10,7 +10,7 @@ import { TextInput } from 'react-native'
 import { uiStyles } from '@/assets/styles/ui'
 import { Flex } from '@/components/layout/Flex'
 import { useSQLiteContext } from 'expo-sqlite'
-import { createTag } from '@/db/queries/tags'
+import { createTag, getTags } from '@/db/queries/tags'
 import { ParamsToTagsSelect } from '@/types/routes'
 
 export default function TagsSelect() {
@@ -18,14 +18,24 @@ export default function TagsSelect() {
   const params = useGlobalSearchParams<ParamsToTagsSelect>()
   const db = useSQLiteContext()
   const userTags = useTagStore((state) => state.data)
+  const setAllTags = useTagStore((state) => state.setData)
   const addTag = useTagStore((state) => state.addTag)
   const [isAddMode, setIsAddMode] = useState(false)
   const [newTagText, setNewTagText] = useState<string>('')
   const [tagsSelected, setTagsSelected] = useState<Tag[]>([])
 
   useEffect(() => {
+    if (userTags.length) return
+    console.log('fetch tags')
+    getTags(db).then((response) => {
+      if (!response.success) return
+      setAllTags(response.data)
+    })
+  }, [db, userTags, setAllTags])
+
+  useEffect(() => {
     if (params.tagIds) {
-      const tagIds = JSON.parse(params.tagIds)
+      const tagIds = JSON.parse(params.tagIds) as string[]
       setTagsSelected(userTags.filter((tag) => tagIds.includes(tag.tagId)))
     }
   }, [params, userTags])

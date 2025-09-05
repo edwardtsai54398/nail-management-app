@@ -3,9 +3,8 @@ import { TextInput } from 'react-native'
 import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
 import AntDesign from '@expo/vector-icons/AntDesign'
-import { createBrand } from '@/db/queries/brand'
+import { createBrand, getBrands } from '@/db/queries/brand'
 import { useBrandStore } from '@/store/brands'
-import { useSeriesStore } from '@/store/series'
 import type { ParamsToBrandSelect } from '@/types/routes'
 import type { Brand } from '@/types/ui'
 import ThemeButton from '@/components/ui/ThemeButton'
@@ -20,10 +19,18 @@ export default function BrandSelect() {
   const db = useSQLiteContext()
   const brands = useBrandStore((state) => state.data)
   const setBrands = useBrandStore((state) => state.setData)
-  const addSeries = useSeriesStore((state) => state.addData)
   const [brandIdSelected, setIdSelected] = useState<string>('')
   const [isAddBrandMode, setIsAddBrandMode] = useState(false)
   const [addBrandText, setAddBrandText] = useState<string>('')
+
+  useEffect(() => {
+    if (brands.length) return
+    console.log('fetch brands')
+    getBrands(db).then((response) => {
+      if (!response.success) return
+      setBrands(response.data)
+    })
+  }, [brands, setBrands, db])
 
   useEffect(() => {
     if (!params.brandId || !brands.some((b) => b.brandId === params.brandId)) return
@@ -56,7 +63,6 @@ export default function BrandSelect() {
       }
       const brand = response.data
       setBrands([brand, ...brands])
-      addSeries(brand.brandId, [])
       setIdSelected(response.data.brandId)
     } catch (e) {
       console.error('CREATE BRAND ERROR:')

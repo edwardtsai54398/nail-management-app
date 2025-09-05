@@ -2,8 +2,6 @@ import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import PolishCard from '@/components/ui/PolishCard'
 import { getPolishList } from '@/db/queries/polishItem'
-import { getBrands } from '@/db/queries/brand'
-import { getTags } from '@/db/queries/tags'
 import { useSQLiteContext } from 'expo-sqlite'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
 import { Polish, SectionData } from '@/types/ui'
@@ -13,9 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import FloatingBtn from '@/components/ui/FloatingBtn'
 import { useRouter } from 'expo-router'
-import { useBrandStore } from '@/store/brands'
-import { useSeriesStore } from '@/store/series'
-import { useTagStore } from '@/store/tags'
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   const result: T[][] = []
@@ -28,9 +23,6 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
 export default function Index() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const setBrandsState = useBrandStore((state) => state.setData)
-  const setSeriesState = useSeriesStore((state) => state.setData)
-  const setTagsState = useTagStore((state) => state.setData)
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext()
   useEffect(() => {
@@ -42,17 +34,7 @@ export default function Index() {
           data: groupInRows<Polish>(result.data.polishItems[i], 3),
         }))
         setPolishData(sectionData)
-        setSeriesState(result.data.series)
       }
-    })
-    getBrands(db).then((result) => {
-      if (!result.success) return
-      // console.log('All brands', result.data)
-      setBrandsState(result.data)
-    })
-    getTags(db).then((res) => {
-      if (!res.success) return
-      setTagsState(res.data)
     })
   }, [])
 

@@ -1,58 +1,74 @@
-import { memo, forwardRef, useState, useCallback, useImperativeHandle } from 'react'
-import { PolishColumnRef } from '@/components/ui/PolishForm/types'
-import { Tag } from '@/types/ui'
+import { memo, forwardRef, useState, useCallback, useImperativeHandle, useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
+import { useTagStore } from '@/store/tags'
+import { getTags } from '@/db/queries/tags'
 import { SPACING } from '@/constants/layout'
+import { PolishColumnRef, PolishFormValues } from './types'
 import { Flex } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import DetailInput from '@/components/ui/DetailInput'
-import { useRouter } from 'expo-router'
 
 type TagsDisplayProps = {
-  values: Tag[]
+  values: PolishFormValues['tagIds']
 }
 
-const TagsDisplay = forwardRef<PolishColumnRef<Tag[]>, TagsDisplayProps>((props, ref) => {
-  const router = useRouter()
-  const [tags, setTags] = useState<Tag[]>(props.values)
+const TagsDisplay = forwardRef<PolishColumnRef<PolishFormValues['tagIds']>, TagsDisplayProps>(
+  (props, ref) => {
+    const router = useRouter()
+    const db = useSQLiteContext()
+    const allTags = useTagStore((state) => state.data)
+    const setAllTags = useTagStore((state) => state.setData)
+    const [tagIds, setTagIds] = useState<string[]>(props.values)
 
-  const handleDetailInputPress = useCallback(() => {
-    if (tags.length === 0) {
-      router.navigate('/tags-select')
-    } else {
-      router.navigate({
-        pathname: '/tags-select',
-        params: { tagIds: JSON.stringify(tags.map((t) => t.tagId)) },
+    useEffect(() => {
+      if (allTags.length || tagIds.length === 0) return
+      console.log('fetch tags')
+      getTags(db).then((response) => {
+        if (!response.success) return
+        setAllTags(response.data)
       })
-    }
-  }, [tags, router])
+    }, [db, allTags, setAllTags, tagIds])
 
-  useImperativeHandle(ref, () => ({
-    getValue: () => tags,
-    setValue: (tags) => setTags(tags),
-  }))
-  return (
-    <View style={styles.container}>
-      <DetailInput
-        label={'標籤'}
-        value={''}
-        type={'select'}
-        onSelectPress={handleDetailInputPress}
-      />
-      {tags.length ? (
-        <View>
-          <Flex style={styles.tagsWrapper}>
-            {tags.map((tag) => (
-              <View key={tag.tagId} style={styles.tag}>
-                <ThemeText>{tag.name}</ThemeText>
-              </View>
-            ))}
-          </Flex>
-        </View>
-      ) : null}
-    </View>
-  )
-})
+    const handleDetailInputPress = useCallback(() => {
+      if (tagIds.length === 0) {
+        router.navigate('/tags-select')
+      } else {
+        router.navigate({
+          pathname: '/tags-select',
+          params: { tagIds: JSON.stringify(tagIds) },
+        })
+      }
+    }, [tagIds, router])
+
+    useImperativeHandle(ref, () => ({
+      getValue: () => tagIds,
+      setValue: (tagIds) => setTagIds(tagIds),
+    }))
+    return (
+      <View style={styles.container}>
+        <DetailInput
+          label={'標籤'}
+          value={''}
+          type={'select'}
+          onSelectPress={handleDetailInputPress}
+        />
+        {tagIds.length ? (
+          <View>
+            <Flex style={styles.tagsWrapper}>
+              {tagIds.map((tId) => (
+                <View key={tId} style={styles.tag}>
+                  <ThemeText>{allTags.find((t) => t.tagId === tId)?.name || ''}</ThemeText>
+                </View>
+              ))}
+            </Flex>
+          </View>
+        ) : null}
+      </View>
+    )
+  },
+)
 
 const styles = StyleSheet.create({
   container: {},

@@ -1,4 +1,4 @@
-import { Polish, PolishType, Tag } from '@/types/ui'
+import { PolishType } from '@/types/ui'
 
 export type PolishFormValues = {
   brandId: string
@@ -8,7 +8,7 @@ export type PolishFormValues = {
   colorIds: string[]
   stock: number
   isFavorites: boolean
-  tags: Tag[]
+  tagIds: string[]
 }
 
 export type ParamsFromSelection = {

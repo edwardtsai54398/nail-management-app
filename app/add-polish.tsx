@@ -10,12 +10,10 @@ import type {
   ParamsFromSelection,
 } from '@/components/ui/PolishForm/types'
 import PolishForm from '@/components/ui/PolishForm/PolishForm'
-import { useTagStore } from '@/store/tags'
 
 export default function AddPolish() {
   const navigation = useNavigation()
   const params = useGlobalSearchParams<ParamsFromSelection>()
-  const useTags = useTagStore((state) => state.data)
   const initValues: PolishFormValues = {
     brandId: '',
     seriesId: '',
@@ -24,7 +22,7 @@ export default function AddPolish() {
     colorIds: [],
     stock: 1,
     isFavorites: false,
-    tags: [],
+    tagIds: [],
   }
 
   const formRef = useRef<PolishFormRef>(null)
@@ -41,13 +39,10 @@ export default function AddPolish() {
     }
     if (params.tagIds) {
       console.log('set tagIds', params)
-      const tagIds = JSON.parse(params.tagIds)
-      formRef.current.setValue(
-        'tags',
-        useTags.filter((tag) => tagIds.includes(tag.tagId)),
-      )
+      const tagIds = JSON.parse(params.tagIds) as string[]
+      formRef.current.setValue('tagIds', tagIds)
     }
-  }, [params, useTags])
+  }, [params])
 
   const handleSaveClick = () => {
     if (!formRef.current) return

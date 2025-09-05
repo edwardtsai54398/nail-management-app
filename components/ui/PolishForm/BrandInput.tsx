@@ -1,9 +1,18 @@
-import { memo, useState, forwardRef, useImperativeHandle, useMemo, useCallback } from 'react'
+import {
+  memo,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useCallback,
+  useEffect,
+} from 'react'
 import { useRouter } from 'expo-router'
 import type { PolishColumnRef } from './types'
 import DetailInput from '@/components/ui/DetailInput'
 import { useBrandStore } from '@/store/brands'
-import { Brand } from '@/types/ui'
+import { getBrands } from '@/db/queries/brand'
+import { useSQLiteContext } from 'expo-sqlite'
 
 type BrandInputProps = {
   val: string
@@ -13,12 +22,22 @@ type BrandInputProps = {
 const BrandInput = forwardRef<PolishColumnRef<string>, BrandInputProps>(
   ({ val, onChange }, ref) => {
     const router = useRouter()
+    const db = useSQLiteContext()
     const [brandId, setBrandId] = useState(val)
     const brandsData = useBrandStore((state) => state.data)
+    const setBrandsData = useBrandStore((state) => state.setData)
     const brandName = useMemo(() => {
-      const brandMap = new Map<string, Brand>(brandsData.map((b) => [b.brandId, b]))
-      return brandMap.get(brandId)?.brandName || ''
+      return brandsData.find((b) => b.brandId === brandId)?.brandName || ''
     }, [brandId, brandsData])
+
+    useEffect(() => {
+      if (brandsData.length || brandId === '') return
+      console.log('fetch brands')
+      getBrands(db).then((response) => {
+        if (!response.success) return
+        setBrandsData(response.data)
+      })
+    }, [brandsData, setBrandsData, db, brandId])
 
     const handlePress = useCallback(() => {
       if (brandId === '') {
