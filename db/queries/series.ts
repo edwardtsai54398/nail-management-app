@@ -5,72 +5,55 @@ import { errorMsg, insertInto, isDataExists } from '@/db/queries/helpers'
 import { getUserId } from '@/db/queries/users'
 import { UserBrandsSchema } from '@/db/schema'
 
-export const addSeries = async (
+export const createSeries = async (
+  db: SQLiteDatabase,
   brandId: string,
   seriesName: string,
-): Promise<{ success: boolean; data: Series }> => {
-  return {
-    success: true,
-    data: {
+): Promise<QueryResult<Series>> => {
+  try {
+    const brand = await db.getFirstAsync<UserBrandsSchema>(
+      `SELECT * FROM user_brands WHERE brand_id = ?`,
       brandId,
-      brandName: '',
-      seriesId: `${brandId}-001`,
-      seriesName,
-    },
-  }
-}
-
-export default function (db: SQLiteDatabase) {
-  const createSeries = async (
-    brandId: string,
-    seriesName: string,
-  ): Promise<QueryResult<Series>> => {
-    try {
-      const brand = await db.getFirstAsync<UserBrandsSchema>(
-        `SELECT * FROM user_brands WHERE brand_id = ?`,
-        brandId,
-      )
-      if (!brand) {
-        return {
-          success: false,
-          error: '品牌不存在',
-        }
-      }
-      if (await isDataExists(db, 'user_polish_series', 'series_name', seriesName)) {
-        return {
-          success: false,
-          error: '系列名稱已存在',
-        }
-      }
-      const userResult = await getUserId(db)
-      if (!userResult.success) return userResult
-
-      const userId = userResult.data
-      const seriesId = Crypto.randomUUID()
-      const sql = insertInto('user_polish_series')
-        .colVal(['series_id', seriesId])
-        .colVal(['user_id', userId])
-        .colVal(['series_name', seriesName])
-        .colVal(['user_brand_id', brandId])
-        .end()
-
-      await db.runAsync(sql)
-
-      return {
-        success: true,
-        data: {
-          brandId,
-          brandName: brand.brand_name,
-          seriesId,
-          seriesName,
-        },
-      }
-    } catch (e) {
+    )
+    if (!brand) {
       return {
         success: false,
-        error: errorMsg(e),
+        error: '品牌不存在',
       }
     }
+    if (await isDataExists(db, 'user_polish_series', 'series_name', seriesName)) {
+      return {
+        success: false,
+        error: '系列名稱已存在',
+      }
+    }
+    const userResult = await getUserId(db)
+    if (!userResult.success) return userResult
+
+    const userId = userResult.data
+    const seriesId = Crypto.randomUUID()
+    const sql = insertInto('user_polish_series')
+      .colVal(['series_id', seriesId])
+      .colVal(['user_id', userId])
+      .colVal(['series_name', seriesName])
+      .colVal(['user_brand_id', brandId])
+      .end()
+
+    await db.runAsync(sql)
+
+    return {
+      success: true,
+      data: {
+        brandId,
+        brandName: brand.brand_name,
+        seriesId,
+        seriesName,
+      },
+    }
+  } catch (e) {
+    return {
+      success: false,
+      error: errorMsg(e),
+    }
   }
-  return { createSeries }
 }

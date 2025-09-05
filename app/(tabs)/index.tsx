@@ -1,9 +1,9 @@
 import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import PolishCard from '@/components/ui/PolishCard'
-import usePolishApi from '@/db/queries/polishItem'
-import useBrandApi from '@/db/queries/brand'
-import useTagsApi from '@/db/queries/tags'
+import { getPolishList } from '@/db/queries/polishItem'
+import { getBrands } from '@/db/queries/brand'
+import { getTags } from '@/db/queries/tags'
 import { useSQLiteContext } from 'expo-sqlite'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
 import { Polish, SectionData } from '@/types/ui'
@@ -33,11 +33,8 @@ export default function Index() {
   const setTagsState = useTagStore((state) => state.setData)
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext()
-  const { getPolishList } = usePolishApi(db)
-  const { getBrands } = useBrandApi(db)
-  const { getTags } = useTagsApi(db)
   useEffect(() => {
-    getPolishList().then((result) => {
+    getPolishList(db).then((result) => {
       // console.log(result);
       if (result.success) {
         const sectionData = result.data.series.map((s, i) => ({
@@ -48,12 +45,12 @@ export default function Index() {
         setSeriesState(result.data.series)
       }
     })
-    getBrands().then((result) => {
+    getBrands(db).then((result) => {
       if (!result.success) return
       // console.log('All brands', result.data)
       setBrandsState(result.data)
     })
-    getTags().then((res) => {
+    getTags(db).then((res) => {
       if (!res.success) return
       setTagsState(res.data)
     })

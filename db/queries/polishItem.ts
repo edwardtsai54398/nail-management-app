@@ -6,31 +6,30 @@ type PolishListResult = {
   polishItems: Polish[][]
 }
 
-export default function (db: SQLiteDatabase) {
-  type PolishQueryRow = {
-    polishId: string
-    polishName: string
-    stock: number
-    isFavorites: number
-    note: string | null
-    uPolishTypeId: string | null
-    uPolishTypeName: string | null
-    oPolishTypeId: string | null
-    oPolishTypeName: string | null
-    colorIds: string | null
-    colorNames: string | null
-    tagIds: string | null
-    tagNames: string | null
-    imgURLs: string | null
-    imgOrders: string | null
-    seriesId: string
-    seriesName: string
-    brandId: string
-    brandName: string
-  }
+type PolishQueryRow = {
+  polishId: string
+  polishName: string
+  stock: number
+  isFavorites: number
+  note: string | null
+  uPolishTypeId: string | null
+  uPolishTypeName: string | null
+  oPolishTypeId: string | null
+  oPolishTypeName: string | null
+  colorIds: string | null
+  colorNames: string | null
+  tagIds: string | null
+  tagNames: string | null
+  imgURLs: string | null
+  imgOrders: string | null
+  seriesId: string
+  seriesName: string
+  brandId: string
+  brandName: string
+}
 
-  const getPolishList = async (): Promise<QueryResult<PolishListResult>> => {
-    const sql = `
+export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<PolishListResult>> => {
+  const sql = `
         SELECT
             uPS.stock_id AS polishId,
             uP.color_name AS polishName,
@@ -70,76 +69,71 @@ export default function (db: SQLiteDatabase) {
             uPS.created_at
         `
 
-    try {
-      const rows = await db.getAllAsync<PolishQueryRow>(sql)
-      const seriesMap = new Map<string, Series>([])
-      const polishItemsGroupBySeries = new Map<string, Polish[]>([])
-      for (const row of rows) {
-        if (!seriesMap.has(row.seriesId)) {
-          seriesMap.set(row.seriesId, {
-            seriesId: row.seriesId,
-            seriesName: row.seriesName,
-            brandId: row.brandId,
-            brandName: row.brandName,
-          })
-          polishItemsGroupBySeries.set(row.seriesId, [])
-        }
-        const polishItem: Polish = {
-          polishId: row.polishId,
-          polishName: row.polishName,
-          isFavorites: row.isFavorites === 1,
-          stock: row.stock,
-          note: row.note || '',
-          brandId: row.brandId,
+  try {
+    const rows = await db.getAllAsync<PolishQueryRow>(sql)
+    const seriesMap = new Map<string, Series>([])
+    const polishItemsGroupBySeries = new Map<string, Polish[]>([])
+    for (const row of rows) {
+      if (!seriesMap.has(row.seriesId)) {
+        seriesMap.set(row.seriesId, {
           seriesId: row.seriesId,
-          brandName: row.brandName,
           seriesName: row.seriesName,
-          colors: row.colorIds
-            ? row.colorIds.split(',').map((cId, i) => ({
-                colorKey: cId,
-                name: row.colorNames?.split(',')[i] || '',
-              }))
-            : [],
-          tags: row.tagIds
-            ? row.tagIds.split(',').map((tId, i) => ({
-                tagId: tId,
-                name: row.tagNames?.split(',')[i] || '',
-              }))
-            : [],
-          polishType: {
-            typeId: row.oPolishTypeId || row.uPolishTypeId!,
-            name: row.oPolishTypeName || row.uPolishTypeName!,
-            isOfficial: row.oPolishTypeId ? true : false,
-          },
-          images: row.imgOrders
-            ? row.imgOrders.split(',').map((imgOrder) => ({
-                order: Number(imgOrder),
-                url: row.imgURLs!.split(',')[Number(imgOrder) - 1],
-              }))
-            : [],
-        }
-        polishItemsGroupBySeries.set(row.seriesId, [
-          ...polishItemsGroupBySeries.get(row.seriesId)!,
-          polishItem,
-        ])
+          brandId: row.brandId,
+          brandName: row.brandName,
+        })
+        polishItemsGroupBySeries.set(row.seriesId, [])
       }
-      // console.log('POLISH_QUERY_RESULT');
-      // console.log(Array.from(seriesMap.values()));
-      // console.log(Array.from(polishItemsGroupBySeries.values()));
-      const result: PolishListResult = {
-        series: Array.from(seriesMap.values()),
-        polishItems: Array.from(polishItemsGroupBySeries.values()),
+      const polishItem: Polish = {
+        polishId: row.polishId,
+        polishName: row.polishName,
+        isFavorites: row.isFavorites === 1,
+        stock: row.stock,
+        note: row.note || '',
+        brandId: row.brandId,
+        seriesId: row.seriesId,
+        brandName: row.brandName,
+        seriesName: row.seriesName,
+        colors: row.colorIds
+          ? row.colorIds.split(',').map((cId, i) => ({
+            colorKey: cId,
+            name: row.colorNames?.split(',')[i] || '',
+          }))
+          : [],
+        tags: row.tagIds
+          ? row.tagIds.split(',').map((tId, i) => ({
+            tagId: tId,
+            name: row.tagNames?.split(',')[i] || '',
+          }))
+          : [],
+        polishType: {
+          typeId: row.oPolishTypeId || row.uPolishTypeId!,
+          name: row.oPolishTypeName || row.uPolishTypeName!,
+          isOfficial: row.oPolishTypeId ? true : false,
+        },
+        images: row.imgOrders
+          ? row.imgOrders.split(',').map((imgOrder) => ({
+            order: Number(imgOrder),
+            url: row.imgURLs!.split(',')[Number(imgOrder) - 1],
+          }))
+          : [],
       }
-      // console.log(rows);
-      return { success: true, data: result }
-    } catch (e: any) {
-      console.error('GET_POLISH_LIST ERROR:')
-      console.error(e)
-      return { success: false, error: e?.message || 'Unknown Error' }
+      polishItemsGroupBySeries.set(row.seriesId, [
+        ...polishItemsGroupBySeries.get(row.seriesId)!,
+        polishItem,
+      ])
     }
-  }
-
-  return {
-    getPolishList,
+    // console.log('POLISH_QUERY_RESULT');
+    // console.log(Array.from(seriesMap.values()));
+    // console.log(Array.from(polishItemsGroupBySeries.values()));
+    const result: PolishListResult = {
+      series: Array.from(seriesMap.values()),
+      polishItems: Array.from(polishItemsGroupBySeries.values()),
+    }
+    // console.log(rows);
+    return { success: true, data: result }
+  } catch (e: any) {
+    console.error('GET_POLISH_LIST ERROR:')
+    console.error(e)
+    return { success: false, error: e?.message || 'Unknown Error' }
   }
 }

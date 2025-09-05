@@ -8,7 +8,7 @@ import ThemeButton from '@/components/ui/ThemeButton'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { forwardRef, useCallback, useImperativeHandle, useState, memo, useEffect } from 'react'
 import { uiStyles } from '@/assets/styles/ui'
-import usePolishTypesApi from '@/db/queries/polishTypes'
+import { createPolishType, getAllPolishTypes } from '@/db/queries/polishTypes'
 import { useSQLiteContext } from 'expo-sqlite'
 import { LINE_COLORS } from '@/constants/Colors'
 import { PolishColumnRef } from '@/components/ui/PolishForm/types'
@@ -21,7 +21,6 @@ type TypesSelectorProps = {
 const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, TypesSelectorProps>(
   (props, ref) => {
     const db = useSQLiteContext()
-    const { createPolishType, getAllPolishTypes } = usePolishTypesApi(db)
     const polishTypes = usePolishTypesStore((state) => state.data)
     const setPolishTypes = usePolishTypesStore((state) => state.setData)
     const [isAddMode, setIsAddMode] = useState<boolean>(false)
@@ -30,7 +29,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
 
     useEffect(() => {
       if (polishTypes.length) return
-      getAllPolishTypes().then((response) => {
+      getAllPolishTypes(db).then((response) => {
         if (!response.success) {
           console.error(response.error)
           return
@@ -55,7 +54,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
     }
     const handleFinishPress = async () => {
       try {
-        const response = await createPolishType(customPolishTypeName)
+        const response = await createPolishType(db, customPolishTypeName)
         if (!response.success) return
         setPolishTypes([...polishTypes, response.data])
         setTypeSelected(response.data)

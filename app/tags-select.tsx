@@ -10,14 +10,13 @@ import { TextInput } from 'react-native'
 import { uiStyles } from '@/assets/styles/ui'
 import { Flex } from '@/components/layout/Flex'
 import { useSQLiteContext } from 'expo-sqlite'
-import useTagsApi from '@/db/queries/tags'
+import { createTag } from '@/db/queries/tags'
 import { ParamsToTagsSelect } from '@/types/routes'
 
 export default function TagsSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToTagsSelect>()
   const db = useSQLiteContext()
-  const { createTag } = useTagsApi(db)
   const userTags = useTagStore((state) => state.data)
   const addTag = useTagStore((state) => state.addTag)
   const [isAddMode, setIsAddMode] = useState(false)
@@ -49,7 +48,7 @@ export default function TagsSelect() {
 
   const handleFinishPress = useCallback(async () => {
     try {
-      const response = await createTag(newTagText)
+      const response = await createTag(db, newTagText)
       if (!response.success) {
         console.error(response.error)
         return

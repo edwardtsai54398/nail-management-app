@@ -3,7 +3,7 @@ import { TextInput } from 'react-native'
 import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
 import AntDesign from '@expo/vector-icons/AntDesign'
-import useBrandApi from '@/db/queries/brand'
+import { createBrand } from '@/db/queries/brand'
 import { useBrandStore } from '@/store/brands'
 import { useSeriesStore } from '@/store/series'
 import type { ParamsToBrandSelect } from '@/types/routes'
@@ -18,7 +18,6 @@ export default function BrandSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToBrandSelect>()
   const db = useSQLiteContext()
-  const { createBrand } = useBrandApi(db)
   const brands = useBrandStore((state) => state.data)
   const setBrands = useBrandStore((state) => state.setData)
   const addSeries = useSeriesStore((state) => state.addData)
@@ -50,7 +49,7 @@ export default function BrandSelect() {
   const handleFinishPress = async () => {
     console.log('handleFinishPress')
     try {
-      const response = await createBrand(addBrandText)
+      const response = await createBrand(db, addBrandText)
       if (!response.success) {
         console.error(response.error)
         return

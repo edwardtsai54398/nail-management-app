@@ -10,14 +10,13 @@ import { Flex } from '@/components/layout/Flex'
 import { SPACING } from '@/constants/layout'
 import { TextInput } from 'react-native'
 import { uiStyles } from '@/assets/styles/ui'
-import userSeriesApi from '@/db/queries/series'
+import { createSeries } from '@/db/queries/series'
 import { useSQLiteContext } from 'expo-sqlite'
 
 export default function SeriesSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToSeriesSelect>()
   const db = useSQLiteContext()
-  const { createSeries } = userSeriesApi(db)
   const seriesMap = useSeriesStore((state) => state.seriesMap)
   const addSeriesData = useSeriesStore((state) => state.addData)
   const [seriesList, setSeriesList] = useState<Series[]>([])
@@ -63,7 +62,7 @@ export default function SeriesSelect() {
 
   const handleFinishPress = async () => {
     try {
-      const response = await createSeries(params.brandId, addSeriesText)
+      const response = await createSeries(db, params.brandId, addSeriesText)
       if (!response.success) return
       const { data } = response
       addSeriesData(data.brandId, [data])

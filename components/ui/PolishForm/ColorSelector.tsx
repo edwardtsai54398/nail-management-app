@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import { PolishColumnRef } from '@/components/ui/PolishForm/types'
 import { useSQLiteContext } from 'expo-sqlite'
 import type { Color } from '@/types/ui'
-import useColorsApi from '@/db/queries/colors'
+import { getOfficialColors } from '@/db/queries/colors'
 import { SPACING } from '@/constants/layout'
 import { LINE_COLORS } from '@/constants/Colors'
 import { ThemeText } from '@/components/layout/ThemeText'
@@ -16,12 +16,11 @@ type ColorSelectorProps = {
 
 const ColorSelector = forwardRef<PolishColumnRef<string[]>, ColorSelectorProps>((props, ref) => {
   const db = useSQLiteContext()
-  const { getOfficialColors } = useColorsApi(db)
   const [colorIdsSelected, setIdsSelected] = useState<string[]>(props.values)
   const [colorTypes, setColorTypes] = useState<Color[]>([])
 
   useEffect(() => {
-    getOfficialColors().then((response) => {
+    getOfficialColors(db).then((response) => {
       if (!response.success) return
       setColorTypes(response.data)
     })
