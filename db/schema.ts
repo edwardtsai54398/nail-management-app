@@ -488,7 +488,7 @@ export const oPolishTypesTableBluePrint: TableBlueprint<OfficialPolishTypesSchem
  * ==========================
  */
 
-interface UserTagsSchema {
+export interface UserTagsSchema {
   tag_id: string
   user_id: string
   tag_name: string
