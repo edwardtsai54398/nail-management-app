@@ -352,7 +352,7 @@ export const uBrandsTableBlueprint: TableBlueprint<UserBrandsSchema> = {
  * =========================================================
  */
 
-interface UserPolishTypesSchema {
+export interface UserPolishTypesSchema {
   polish_type_id: string
   user_id: string
   type_name: string
@@ -467,7 +467,7 @@ export const oBrandsTableBlueprint: TableBlueprint<OfficialBrandsSchema> = {
  * BLOOMING_LIQUID = 暈染液
  */
 
-interface OfficialPolishTypesSchema {
+export interface OfficialPolishTypesSchema {
   type_key: string
   zh_tw: string
 }
