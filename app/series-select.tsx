@@ -1,24 +1,23 @@
-import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
-import { useSeriesStore } from '@/store/series'
 import { useCallback, useEffect, useState } from 'react'
-import { Series } from '@/types/ui'
+import { TextInput } from 'react-native'
+import { Stack, useGlobalSearchParams, useRouter } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
+import AntDesign from '@expo/vector-icons/AntDesign'
 import { ParamsToSeriesSelect } from '@/types/routes'
+import { Series } from '@/types/ui'
+import { useSeriesStore } from '@/store/series'
+import { createSeries, getSeries } from '@/db/queries/series'
 import SelectList from '@/components/ui/SelectList'
 import ThemeButton from '@/components/ui/ThemeButton'
-import AntDesign from '@expo/vector-icons/AntDesign'
 import { Flex } from '@/components/layout/Flex'
 import { SPACING } from '@/constants/layout'
-import { TextInput } from 'react-native'
 import { uiStyles } from '@/assets/styles/ui'
-import { createSeries } from '@/db/queries/series'
-import { useSQLiteContext } from 'expo-sqlite'
 
 export default function SeriesSelect() {
   const router = useRouter()
   const params = useGlobalSearchParams<ParamsToSeriesSelect>()
   const db = useSQLiteContext()
-  const seriesMap = useSeriesStore((state) => state.seriesMap)
-  const addSeriesData = useSeriesStore((state) => state.addData)
+  const addSeriesData = useSeriesStore((state) => state.set)
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [seriesIdSelected, setIdSelected] = useState<string>('')
   const [isAddSeriesMode, setIsAddSeriesMode] = useState(false)
@@ -26,14 +25,11 @@ export default function SeriesSelect() {
 
   useEffect(() => {
     if (!params.brandId) return
-    // console.log('series-select got brandId', params)
-    // if (!seriesMap.has(params.brandId)) {
-    //   console.error(`brandId "${params.brandId}" is not exists`)
-    //   router.back()
-    //   return
-    // }
-    setSeriesList(seriesMap.get(params.brandId) || [])
-  }, [seriesMap, params, router])
+    getSeries(db, { brandId: params.brandId }).then((response) => {
+      if (!response.success) return
+      setSeriesList(response.data)
+    })
+  }, [params, setSeriesList, db])
 
   useEffect(() => {
     if (!params.seriesId) return
@@ -65,7 +61,7 @@ export default function SeriesSelect() {
       const response = await createSeries(db, params.brandId, addSeriesText)
       if (!response.success) return
       const { data } = response
-      addSeriesData(data.brandId, [data])
+      addSeriesData(data)
       setIdSelected(data.seriesId)
       setIsAddSeriesMode(false)
       setAddSeriesText('')

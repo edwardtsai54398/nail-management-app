@@ -2,35 +2,23 @@ import { create } from 'zustand'
 import { Series } from '@/types/ui'
 
 interface SeriesStore {
-  seriesMap: Map<string, Series[]>
-  setData: (data: Series[]) => void
-  addData: (brandId: string, data: Series[]) => void
+  seriesMap: Map<string, Series>
+  setAllData: (data: Series[]) => void
+  set: (data: Series) => void
 }
 
 export const useSeriesStore = create<SeriesStore>((set) => ({
-  seriesMap: new Map([]),
-  setData: (val) =>
+  seriesMap: new Map(),
+  setAllData: (data) =>
     set(() => {
-      const map = new Map<string, Series[]>()
-      val.forEach((s) => {
-        if (!map.has(s.brandId)) {
-          map.set(s.brandId, [s])
-        } else {
-          const prev = map.get(s.brandId)!
-          map.set(s.brandId, [...prev, s])
-        }
-      })
-      return { seriesMap: map }
+      return {
+        seriesMap: new Map(data.map((s) => [s.seriesId, s])),
+      }
     }),
-  addData: (brandId, data) =>
+  set: (series) =>
     set((state) => {
       const map = new Map(state.seriesMap)
-      if (map.has(brandId)) {
-        const prev = map.get(brandId)!
-        map.set(brandId, data.concat(prev))
-      } else {
-        map.set(brandId, data)
-      }
+      map.set(series.seriesId, series)
       return { seriesMap: map }
     }),
 }))

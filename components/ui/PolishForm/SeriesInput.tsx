@@ -7,10 +7,12 @@ import {
   useCallback,
   useEffect,
 } from 'react'
-import type { PolishColumnRef } from './types'
-import DetailInput from '@/components/ui/DetailInput'
+import { useSQLiteContext } from 'expo-sqlite'
 import { useRouter } from 'expo-router'
+import type { PolishColumnRef } from './types'
 import { useSeriesStore } from '@/store/series'
+import { getSeries } from '@/db/queries/series'
+import DetailInput from '@/components/ui/DetailInput'
 
 type SeriesInputProps = {
   val: string
@@ -22,14 +24,16 @@ type SeriesInputProps = {
 const SeriesInput = forwardRef<PolishColumnRef<string>, SeriesInputProps>(
   ({ val, brandId }, ref) => {
     const router = useRouter()
+    const db = useSQLiteContext()
     const seriesMap = useSeriesStore((state) => state.seriesMap)
+    const setSeriesMap = useSeriesStore((state) => state.setAllData)
     const [seriesId, setSeriesId] = useState(val)
     const seriesName = useMemo(() => {
-      if (brandId === '' || seriesId === '') return ''
-      const seriesList = seriesMap.get(brandId)
-      if (!seriesList) return ''
-      return seriesList.find((s) => s.seriesId === seriesId)?.seriesName || 'Not found'
-    }, [seriesId, seriesMap, brandId])
+      if (seriesId === '') return ''
+      const series = seriesMap.get(seriesId)
+      if (!series) return ''
+      return series.seriesName
+    }, [seriesId, seriesMap])
 
     const handlePress = useCallback(() => {
       if (brandId === '') {
@@ -47,6 +51,14 @@ const SeriesInput = forwardRef<PolishColumnRef<string>, SeriesInputProps>(
       // console.log('SeriesInput 重置')
       if (brandId) setSeriesId('')
     }, [brandId])
+
+    useEffect(() => {
+      if (seriesMap.size) return
+      getSeries(db).then((response) => {
+        if (!response.success) return
+        setSeriesMap(response.data)
+      })
+    }, [db, setSeriesMap, seriesMap])
 
     useImperativeHandle(ref, () => ({
       getValue: () => seriesId,
