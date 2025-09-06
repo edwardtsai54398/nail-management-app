@@ -1,19 +1,21 @@
-import { Stack, useGlobalSearchParams, useNavigation } from 'expo-router'
-import { StyleSheet, ScrollView } from 'react-native'
-import AntDesign from '@expo/vector-icons/AntDesign'
+import PolishForm from '@/components/ui/PolishForm/PolishForm'
+import type {
+  ParamsFromSelection,
+  PolishFormRef,
+  PolishFormValues,
+} from '@/components/ui/PolishForm/types'
 import ThemeButton from '@/components/ui/ThemeButton'
 import { SPACING } from '@/constants/layout'
-import { useRef, useEffect } from 'react'
-import { useSQLiteContext } from 'expo-sqlite'
-import type {
-  PolishFormValues,
-  PolishFormRef,
-  ParamsFromSelection,
-} from '@/components/ui/PolishForm/types'
 import { createPolishItem, CreatePolishQuery } from '@/db/queries/polishItem'
-import PolishForm from '@/components/ui/PolishForm/PolishForm'
+import AntDesign from '@expo/vector-icons/AntDesign'
+import { Stack, useGlobalSearchParams, useNavigation } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
+import { useEffect, useRef } from 'react'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function AddPolish() {
+  const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const db = useSQLiteContext()
   const params = useGlobalSearchParams<ParamsFromSelection>()
@@ -26,6 +28,7 @@ export default function AddPolish() {
     stock: 1,
     isFavorites: false,
     tagIds: [],
+    note: ''
   }
 
   const formRef = useRef<PolishFormRef>(null)
@@ -102,8 +105,11 @@ export default function AddPolish() {
         }}
       />
 
-      <ScrollView style={styles.container}>
-        <PolishForm ref={formRef} initValues={initValues} />
+      <ScrollView style={[styles.container]}>
+        <View style={{marginBottom: 36}}>
+        
+          <PolishForm ref={formRef} initValues={initValues} />
+        </View>
       </ScrollView>
     </>
   )

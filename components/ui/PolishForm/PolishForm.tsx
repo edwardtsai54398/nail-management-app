@@ -13,6 +13,7 @@ import { Row, Col } from '@/components/layout/Flex'
 import StockCounter from '@/components/ui/PolishForm/StockCounter'
 import Favorites from '@/components/ui/PolishForm/Favorite'
 import TagsDisplay from '@/components/ui/PolishForm/TagsDisplay'
+import NoteInput from './NoteInput'
 
 type PolishFormProps = {
   initValues: PolishFormValues
@@ -29,6 +30,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
   const stockRef = useRef<PolishColumnRef<number>>(null)
   const favoritesRef = useRef<PolishColumnRef<boolean>>(null)
   const tagsRef = useRef<PolishColumnRef<PolishFormValues['tagIds']>>(null)
+  const noteRef = useRef<PolishColumnRef<string>>(null)
 
   const handleBrandInputChange = useCallback(
     (brandId: string) => {
@@ -48,6 +50,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
       stock: stockRef.current?.getValue() || 0,
       isFavorites: favoritesRef.current?.getValue() || false,
       tagIds: tagsRef.current?.getValue() || [],
+      note: noteRef.current?.getValue() || ''
     }),
     setValue: (key, val) => {
       switch (key) {
@@ -92,6 +95,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
         </Row>
       </View>
       <TagsDisplay ref={tagsRef} values={initValRef.current.tagIds} />
+      <NoteInput ref={noteRef} val={initValRef.current.note}/>
     </View>
   )
 })

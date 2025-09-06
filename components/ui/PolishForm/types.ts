@@ -9,6 +9,7 @@ export type PolishFormValues = {
   stock: number
   isFavorites: boolean
   tagIds: string[]
+  note: string
 }
 
 export type ParamsFromSelection = {

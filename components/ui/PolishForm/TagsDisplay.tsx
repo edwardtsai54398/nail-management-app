@@ -9,6 +9,7 @@ import { PolishColumnRef, PolishFormValues } from './types'
 import { Flex } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import DetailInput from '@/components/ui/DetailInput'
+import { LINE_COLORS } from '@/constants/Colors'
 
 type TagsDisplayProps = {
   values: PolishFormValues['tagIds']
@@ -71,7 +72,10 @@ const TagsDisplay = forwardRef<PolishColumnRef<PolishFormValues['tagIds']>, Tags
 )
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    borderBottomWidth: 1,
+    borderColor: LINE_COLORS.second
+  },
   tagsWrapper: {
     flexWrap: 'wrap',
     width: '100%',
