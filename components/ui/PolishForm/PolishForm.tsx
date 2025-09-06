@@ -4,16 +4,18 @@ import { SPACING } from '@/constants/layout'
 import { LINE_COLORS } from '@/constants/Colors'
 import BrandInput from './BrandInput'
 import type { PolishColumnRef, PolishFormValues, PolishFormRef } from './types'
-import SeriesInput from '@/components/ui/PolishForm/SeriesInput'
-import ColorNameInput from '@/components/ui/PolishForm/ColorNameInput'
-import PolishTypesSelector from '@/components/ui/PolishForm/PolishTypesSelector'
+import SeriesInput from './SeriesInput'
+import ColorNameInput from './ColorNameInput'
+import PolishTypesSelector from './PolishTypesSelector'
 import { PolishType } from '@/types/ui'
-import ColorSelector from '@/components/ui/PolishForm/ColorSelector'
+import ColorSelector from './ColorSelector'
 import { Row, Col } from '@/components/layout/Flex'
-import StockCounter from '@/components/ui/PolishForm/StockCounter'
-import Favorites from '@/components/ui/PolishForm/Favorite'
-import TagsDisplay from '@/components/ui/PolishForm/TagsDisplay'
+import StockCounter from './StockCounter'
+import Favorites from './Favorite'
+import TagsDisplay from './TagsDisplay'
 import NoteInput from './NoteInput'
+import ImagesPicker from './ImagesPicker'
+
 
 type PolishFormProps = {
   initValues: PolishFormValues
@@ -74,12 +76,14 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
   }))
 
   return (
+    <>
+    <ImagesPicker/>
     <View style={styles.card}>
       <BrandInput
         ref={brandRef}
         val={initValRef.current.brandId}
         onChange={handleBrandInputChange}
-      />
+        />
       <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
       <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
       <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType} />
@@ -96,7 +100,9 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
       </View>
       <TagsDisplay ref={tagsRef} values={initValRef.current.tagIds} />
       <NoteInput ref={noteRef} val={initValRef.current.note}/>
+      
     </View>
+        </>
   )
 })
 
