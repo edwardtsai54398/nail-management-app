@@ -1,20 +1,20 @@
+import { Col, Row } from '@/components/layout/Flex'
+import { LINE_COLORS } from '@/constants/Colors'
+import { SPACING } from '@/constants/layout'
+import { PolishType } from '@/types/ui'
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { SPACING } from '@/constants/layout'
-import { LINE_COLORS } from '@/constants/Colors'
 import BrandInput from './BrandInput'
-import type { PolishColumnRef, PolishFormValues, PolishFormRef } from './types'
-import SeriesInput from './SeriesInput'
 import ColorNameInput from './ColorNameInput'
-import PolishTypesSelector from './PolishTypesSelector'
-import { PolishType } from '@/types/ui'
 import ColorSelector from './ColorSelector'
-import { Row, Col } from '@/components/layout/Flex'
-import StockCounter from './StockCounter'
 import Favorites from './Favorite'
-import TagsDisplay from './TagsDisplay'
-import NoteInput from './NoteInput'
 import ImagesPicker from './ImagesPicker'
+import NoteInput from './NoteInput'
+import PolishTypesSelector from './PolishTypesSelector'
+import SeriesInput from './SeriesInput'
+import StockCounter from './StockCounter'
+import TagsDisplay from './TagsDisplay'
+import type { PolishColumnRef, PolishFormRef, PolishFormValues } from './types'
 
 
 type PolishFormProps = {
@@ -57,6 +57,7 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
     setValue: (key, val) => {
       switch (key) {
         case 'brandId':
+          console.log('brandID setValue', val);
           brandRef.current?.setValue(val as string)
           break
         case 'seriesId':

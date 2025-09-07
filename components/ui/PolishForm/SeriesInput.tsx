@@ -1,18 +1,18 @@
+import DetailInput from '@/components/ui/DetailInput'
+import { getSeries } from '@/db/queries/series'
+import { useSeriesStore } from '@/store/series'
+import { useRouter } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
 import {
-  memo,
-  useState,
   forwardRef,
-  useImperativeHandle,
-  useMemo,
+  memo,
   useCallback,
   useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
 } from 'react'
-import { useSQLiteContext } from 'expo-sqlite'
-import { useRouter } from 'expo-router'
 import type { PolishColumnRef } from './types'
-import { useSeriesStore } from '@/store/series'
-import { getSeries } from '@/db/queries/series'
-import DetailInput from '@/components/ui/DetailInput'
 
 type SeriesInputProps = {
   val: string
