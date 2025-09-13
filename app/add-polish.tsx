@@ -28,7 +28,8 @@ export default function AddPolish() {
     stock: 1,
     isFavorites: false,
     tagIds: [],
-    note: ''
+    note: '',
+    images: [],
   }
 
   const formRef = useRef<PolishFormRef>(null)
@@ -105,9 +106,8 @@ export default function AddPolish() {
         }}
       />
 
-      <ScrollView style={[styles.container]}>
-        <View style={{marginBottom: 36}}>
-        
+      <ScrollView style={[styles.container, { marginBottom: insets.bottom }]}>
+        <View style={{ marginBottom: insets.bottom }}>
           <PolishForm ref={formRef} initValues={initValues} />
         </View>
       </ScrollView>

@@ -74,7 +74,7 @@ const TagsDisplay = forwardRef<PolishColumnRef<PolishFormValues['tagIds']>, Tags
 const styles = StyleSheet.create({
   container: {
     borderBottomWidth: 1,
-    borderColor: LINE_COLORS.second
+    borderColor: LINE_COLORS.second,
   },
   tagsWrapper: {
     flexWrap: 'wrap',

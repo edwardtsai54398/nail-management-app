@@ -1,9 +1,9 @@
-import { TouchableOpacity, View, StyleSheet, TouchableOpacityProps } from 'react-native'
-import { ReactNode } from 'react'
-import { SPACING } from '@/constants/layout'
 import { Flex } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors'
+import { SPACING } from '@/constants/layout'
+import { ReactNode } from 'react'
+import { StyleSheet, TouchableOpacity, TouchableOpacityProps, View } from 'react-native'
 
 type ButtonProps = {
   onPress?: () => void
@@ -50,6 +50,7 @@ export default function ThemeButton({
     <TouchableOpacity activeOpacity={0.5} disabled={disabled} {...rest}>
       <Flex
         direction={icon && iconAlign === 'right' ? 'row-reverse' : 'row'}
+        justify="center"
         style={[styles.button]}>
         {icon ? (
           <View style={[styles.iconWrapper, label ? styles.iconGap : null]}>{icon}</View>

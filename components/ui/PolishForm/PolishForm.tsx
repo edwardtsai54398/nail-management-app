@@ -1,7 +1,7 @@
-import { Col, Row } from '@/components/layout/Flex'
+import { Col, Flex, Row } from '@/components/layout/Flex'
 import { LINE_COLORS } from '@/constants/Colors'
 import { SPACING } from '@/constants/layout'
-import { PolishType } from '@/types/ui'
+import { PolishImage, PolishType } from '@/types/ui'
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
 import BrandInput from './BrandInput'
@@ -15,7 +15,6 @@ import SeriesInput from './SeriesInput'
 import StockCounter from './StockCounter'
 import TagsDisplay from './TagsDisplay'
 import type { PolishColumnRef, PolishFormRef, PolishFormValues } from './types'
-
 
 type PolishFormProps = {
   initValues: PolishFormValues
@@ -33,6 +32,9 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
   const favoritesRef = useRef<PolishColumnRef<boolean>>(null)
   const tagsRef = useRef<PolishColumnRef<PolishFormValues['tagIds']>>(null)
   const noteRef = useRef<PolishColumnRef<string>>(null)
+  const imgRef1 = useRef<PolishColumnRef<string>>(null)
+  const imgRef2 = useRef<PolishColumnRef<string>>(null)
+  const imgRef3 = useRef<PolishColumnRef<string>>(null)
 
   const handleBrandInputChange = useCallback(
     (brandId: string) => {
@@ -52,12 +54,26 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
       stock: stockRef.current?.getValue() || 0,
       isFavorites: favoritesRef.current?.getValue() || false,
       tagIds: tagsRef.current?.getValue() || [],
-      note: noteRef.current?.getValue() || ''
+      note: noteRef.current?.getValue() || '',
+      images: (() => {
+        const result: PolishImage[] = []
+        const imgRefs = [imgRef1, imgRef2, imgRef3]
+        imgRefs.forEach((ref) => {
+          const url = ref.current?.getValue()
+          if (url) {
+            result.push({
+              order: result.length + 1,
+              url,
+            })
+          }
+        })
+        return result
+      })(),
     }),
     setValue: (key, val) => {
       switch (key) {
         case 'brandId':
-          console.log('brandID setValue', val);
+          console.log('brandID setValue', val)
           brandRef.current?.setValue(val as string)
           break
         case 'seriesId':
@@ -78,32 +94,45 @@ const PolishForm = forwardRef<PolishFormRef, PolishFormProps>(({ initValues }, r
 
   return (
     <>
-    <ImagesPicker/>
-    <View style={styles.card}>
-      <BrandInput
-        ref={brandRef}
-        val={initValRef.current.brandId}
-        onChange={handleBrandInputChange}
+      <View>
+        <ImagesPicker
+          ref={imgRef1}
+          imgSource={initValRef.current.images[0]?.url || ''}
+          size={200}
         />
-      <SeriesInput ref={seriesRef} val={initValRef.current.seriesId} brandId={brandIdRef.current} />
-      <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
-      <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType} />
-      <ColorSelector ref={colorSelectorRef} values={initValRef.current.colorIds} />
-      <View style={styles.stockFavoriteWrapper}>
-        <Row>
-          <Col base={7} style={styles.stockWrapper}>
-            <StockCounter ref={stockRef} val={initValRef.current.stock} />
-          </Col>
-          <Col base={5}>
-            <Favorites ref={favoritesRef} val={initValRef.current.isFavorites} />
-          </Col>
-        </Row>
+        <Flex justify="around">
+          <ImagesPicker ref={imgRef2} imgSource={initValRef.current.images[1]?.url || ''} />
+          <ImagesPicker ref={imgRef3} imgSource={initValRef.current.images[2]?.url || ''} />
+        </Flex>
       </View>
-      <TagsDisplay ref={tagsRef} values={initValRef.current.tagIds} />
-      <NoteInput ref={noteRef} val={initValRef.current.note}/>
-      
-    </View>
-        </>
+      <View style={styles.card}>
+        <BrandInput
+          ref={brandRef}
+          val={initValRef.current.brandId}
+          onChange={handleBrandInputChange}
+        />
+        <SeriesInput
+          ref={seriesRef}
+          val={initValRef.current.seriesId}
+          brandId={brandIdRef.current}
+        />
+        <ColorNameInput ref={coloNameRef} val={initValRef.current.colorName} />
+        <PolishTypesSelector ref={polishTypesRef} val={initValRef.current.polishType} />
+        <ColorSelector ref={colorSelectorRef} values={initValRef.current.colorIds} />
+        <View style={styles.stockFavoriteWrapper}>
+          <Row>
+            <Col base={7} style={styles.stockWrapper}>
+              <StockCounter ref={stockRef} val={initValRef.current.stock} />
+            </Col>
+            <Col base={5}>
+              <Favorites ref={favoritesRef} val={initValRef.current.isFavorites} />
+            </Col>
+          </Row>
+        </View>
+        <TagsDisplay ref={tagsRef} values={initValRef.current.tagIds} />
+        <NoteInput ref={noteRef} val={initValRef.current.note} />
+      </View>
+    </>
   )
 })
 
