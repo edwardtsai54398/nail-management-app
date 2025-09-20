@@ -62,6 +62,7 @@ export default function SeriesSelect() {
       if (!response.success) return
       const { data } = response
       addSeriesData(data)
+      setSeriesList((prev) => [data, ...prev])
       setIdSelected(data.seriesId)
       setIsAddSeriesMode(false)
       setAddSeriesText('')

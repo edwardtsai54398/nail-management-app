@@ -5,12 +5,12 @@ import { getPolishList } from '@/db/queries/polishItem'
 import { useSQLiteContext } from 'expo-sqlite'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
 import { Polish, SectionData } from '@/types/ui'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { SectionList, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import FloatingBtn from '@/components/ui/FloatingBtn'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   const result: T[][] = []
@@ -25,18 +25,22 @@ export default function Index() {
   const router = useRouter()
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext()
-  useEffect(() => {
-    getPolishList(db).then((result) => {
-      // console.log(result);
-      if (result.success) {
-        const sectionData = result.data.series.map((s, i) => ({
-          ...s,
-          data: groupInRows<Polish>(result.data.polishItems[i], 3),
-        }))
-        setPolishData(sectionData)
-      }
-    })
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      console.log('useFocusEffect')
+
+      getPolishList(db).then((result) => {
+        // console.log(result);
+        if (result.success) {
+          const sectionData = result.data.series.map((s, i) => ({
+            ...s,
+            data: groupInRows<Polish>(result.data.polishItems[i], 3),
+          }))
+          setPolishData(sectionData)
+        }
+      })
+    }, [db]),
+  )
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

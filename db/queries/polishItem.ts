@@ -1,6 +1,6 @@
 import { SQLiteDatabase } from 'expo-sqlite'
 import * as Crypto from 'expo-crypto'
-import { type Polish, Series, QueryResult } from '@/types/ui'
+import { type Polish, Series, QueryResult, PolishImage } from '@/types/ui'
 import { errorMsg, isDataExists } from '@/db/queries/helpers'
 import { getUserId } from '@/db/queries/users'
 
@@ -152,10 +152,7 @@ export type CreatePolishQuery = {
   isFavorites?: boolean
   tagIds?: string[]
   note?: string
-  images: {
-    order: number
-    path: string
-  }[]
+  images: PolishImage[]
 }
 type CreateTagResult = {
   polishId: string
@@ -187,8 +184,8 @@ export const createPolishItem = async (
         missingParams.push('images.order')
         missing = true
       }
-      if (!('path' in img)) {
-        missingParams.push('images.path')
+      if (!('url' in img)) {
+        missingParams.push('images.url')
         missing = true
       }
     }
@@ -213,10 +210,9 @@ export const createPolishItem = async (
   //=======================================
   try {
     //檢查 ID 是否存在
-    const checkSeriesSql = `SELECT S.series_id, S.series_name, P.color_name FROM user_polish_series S JOIN user_polish_items P ON P.user_series_id = S.series_id WHERE S.series_id = ?`
+    const checkSeriesSql = `SELECT S.series_id, S.series_name FROM user_polish_series S WHERE S.series_id = ?`
     const seriesRows = await db.getAllAsync<{
       series_id: string
-      color_name: string
       series_name: string
     }>(checkSeriesSql, query.seriesId)
     if (seriesRows.length === 0)
@@ -224,11 +220,16 @@ export const createPolishItem = async (
         success: false,
         error: `Not found seriesId: "${query.seriesId}"`,
       }
-    const matchSeries = seriesRows.find((s) => s.color_name === query.polishName)
-    if (matchSeries)
+    const checkPolishNameSql = `SELECT S.series_id, S.series_name, P.color_name FROM user_polish_series S JOIN user_polish_items P ON P.user_series_id = S.series_id WHERE S.series_id = ? AND P.color_name = ?`
+    const matches = await db.getAllAsync<{
+      series_id: string
+      series_name: string
+      color_name: string
+    }>(checkPolishNameSql, [query.seriesId, query.polishName])
+    if (matches.length)
       return {
         success: false,
-        error: `色號名稱已存在在系列 ${matchSeries.series_name} 中`,
+        error: `色號名稱已存在在系列 ${matches[0].series_name} 中`,
       }
     if (
       !query.polishType.isOfficial &&
@@ -323,7 +324,7 @@ export const createPolishItem = async (
             image_order,
             url
             ) VALUES (?,?,?,?,?)`,
-          [imgId, userId, stockId, img.order, img.path],
+          [imgId, userId, stockId, img.order, img.url],
         )
       }
       // console.log('polish_images executed')

@@ -8,14 +8,15 @@ import ThemeButton from '@/components/ui/ThemeButton'
 import { SPACING } from '@/constants/layout'
 import { createPolishItem, CreatePolishQuery } from '@/db/queries/polishItem'
 import AntDesign from '@expo/vector-icons/AntDesign'
-import { Stack, useGlobalSearchParams, useNavigation } from 'expo-router'
+import { useRouter, Stack, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
 import { useEffect, useRef } from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function AddPolish() {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const navigation = useNavigation()
   const db = useSQLiteContext()
   const params = useGlobalSearchParams<ParamsFromSelection>()
@@ -56,8 +57,28 @@ export default function AddPolish() {
     const values = formRef.current.getValues()
     console.log('handleSaveClick')
     console.log(values)
-    if (!values.polishType || !values.seriesId || !values.colorName || values.colorIds.length < 1)
+
+    if (!values.seriesId) {
+      Alert.alert('請選擇系列', '', [{ text: 'OK', style: 'cancel' }])
       return
+    }
+
+    if (!values.colorName) {
+      Alert.alert('請填寫色號名稱', '', [{ text: 'OK', style: 'cancel' }])
+      return
+    }
+    if (!values.polishType) {
+      Alert.alert('請選擇色膠種類', '', [{ text: 'OK', style: 'cancel' }])
+      return
+    }
+    if (values.colorIds.length < 1) {
+      Alert.alert('請選擇至少一種顏色', '', [{ text: 'OK', style: 'cancel' }])
+      return
+    }
+    if (values.images.length < 1) {
+      Alert.alert('請使用至少一張照片或圖片', '', [{ text: 'OK', style: 'cancel' }])
+      return
+    }
     const payload: CreatePolishQuery = {
       seriesId: values.seriesId,
       polishName: values.colorName,
@@ -70,12 +91,7 @@ export default function AddPolish() {
       isFavorites: values.isFavorites,
       tagIds: values.tagIds,
       note: '',
-      images: [
-        {
-          order: 1,
-          path: 'https://picsum.photos/seed/picsum/200/300',
-        },
-      ],
+      images: values.images,
     }
     createPolishItem(db, payload).then((response) => {
       if (!response.success) {
@@ -84,6 +100,7 @@ export default function AddPolish() {
       }
       console.log('Create polishItem Success!!!')
       console.log(response.data)
+      router.navigate('/(tabs)')
     })
   }
   return (
