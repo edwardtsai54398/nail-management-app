@@ -1,28 +1,63 @@
-import TopBar from './TopBar'
-import Drawer from './Drawer'
+
+import { ThemeText } from '@/components/layout/ThemeText'
+import { LINE_COLORS, TEXT_COLORS, THEME_COLORS } from '@/constants/Colors'
+import { SPACING } from '@/constants/layout'
+import Feather from '@expo/vector-icons/Feather'
+import FontAwesome from '@expo/vector-icons/FontAwesome'
 import {
-  Button,
-  View,
-  TouchableWithoutFeedback,
-  StyleSheet,
-  Animated,
-  useAnimatedValue,
-} from 'react-native'
-import {
-  ReactNode,
   createContext,
   Dispatch,
+  ReactNode,
   SetStateAction,
-  useState,
   useContext,
   useEffect,
+  useState,
 } from 'react'
-import { ThemeText } from '@/components/layout/ThemeText'
-import FontAwesome from '@expo/vector-icons/FontAwesome'
-import { SPACING } from '@/constants/layout'
-import { TEXT_COLORS, THEME_COLORS } from '@/constants/Colors'
+import {
+  Animated,
+  Button,
+  Dimensions,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  useAnimatedValue,
+  View,
+} from 'react-native'
+import { Flex } from '../layout/Flex'
+import Drawer from './Drawer'
+
+const filterIconSize = 36
 
 const styles = StyleSheet.create({
+  iconWrapper: {
+    position: 'relative'
+  },
+  filterIcon: {
+    width: filterIconSize,
+    height: filterIconSize,
+    borderRadius: '50%',
+    borderWidth: 1,
+    borderColor: LINE_COLORS.default,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eee'
+  },
+  filtersWrapper: {
+    position: 'absolute',
+    zIndex: -1,
+    right: 0,
+    top: 0,
+    width: filterIconSize,
+    height: filterIconSize,
+    backgroundColor: '#999',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  filterLabelsWrapper: {
+    flexGrow: 1,
+    paddingRight: filterIconSize
+  },
   filterButton: {
     display: 'flex',
     justifyContent: 'center',
@@ -51,37 +86,100 @@ type FilterContextType = {
 
 const FiltersContext = createContext<FilterContextType | null>(null)
 
-export default function TopFilters({ children, height }: { children: ReactNode; height?: number }) {
+const filterBarOversize = 10
+export default function TopFilters() {
+  const {width: deviceWidth} = Dimensions.get('window')
+  const [isBarOpen, setBarOpen] = useState(false)
+  const translateX = useAnimatedValue(0)
+  const translateY = useAnimatedValue(0)
+  const barBorderRadius = useAnimatedValue(filterIconSize / 2)
+  const widthAnimationValue = useAnimatedValue(0)
+  const barWidth = widthAnimationValue.interpolate({
+    inputRange: [0,0.5,1],
+    outputRange: [filterIconSize, filterIconSize + filterBarOversize, deviceWidth - (SPACING.lg * 2)]
+  })
+  const barHeight = useAnimatedValue(filterIconSize)
   const [options, setOptions] = useState<FilterOptionProps[]>([])
-  const [drawerName, setDrawerName] = useState<string>('')
-  const [labelActive, setLabelActive] = useState<string[]>([])
 
-  const value = {
-    options,
-    setOptions,
-    drawerName,
-    setDrawerName,
-    labelActive,
-    setLabelActive,
-  }
+  useEffect(() => {
+    if(isBarOpen) {
+      Animated.timing(widthAnimationValue, {
+        toValue: 0.5,
+        duration: 100,
+        useNativeDriver: false,
+      }).start(() => {
+        Animated.timing(widthAnimationValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }).start()
+      })
+      Animated.timing(barHeight, {
+        toValue: filterIconSize + filterBarOversize,
+        duration: 100,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(translateX,{
+        toValue: filterBarOversize / 2,
+        duration: 100,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(translateY,{
+        toValue: (filterBarOversize / 2) * -1,
+        duration: 100,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(barBorderRadius,{
+        toValue: (filterIconSize + filterBarOversize) / 2,
+        duration: 100,
+        useNativeDriver: false,
+      }).start()
+    } else {
+      Animated.timing(widthAnimationValue, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(barHeight, {
+        toValue: filterIconSize,
+        duration: 250,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: false,
+      }).start()
+      Animated.timing(barBorderRadius,{
+        toValue: filterIconSize / 2,
+        duration: 250,
+        useNativeDriver: false,
+      }).start()
+    }
+  }, [isBarOpen])
+
 
   return (
-    <FiltersContext.Provider value={value}>
-      <TopBar justify="around" height={height}>
-        {options.map((opt, i) => (
-          <FilterLabel
-            key={i}
-            label={!opt.renderLabel ? opt.label : opt.renderLabel(opt.label)}
-            isTextActive={labelActive.includes(opt.name) || opt.name === drawerName}
-            isDrawerActive={opt.name === drawerName}
-            onPress={() => {
-              setDrawerName(opt.name === drawerName ? '' : opt.name)
-            }}
-          />
-        ))}
-      </TopBar>
-      {children}
-    </FiltersContext.Provider>
+      <View style={styles.iconWrapper}>
+        
+        <TouchableWithoutFeedback onPress={() => setBarOpen(!isBarOpen)}>
+          <View style={styles.filterIcon}>
+            <Feather name="filter" size={18}/>
+            
+          </View>
+        </TouchableWithoutFeedback>
+        <Animated.View style={[styles.filtersWrapper,{padding: filterBarOversize}, {transform: [{translateX}, {translateY}], borderRadius: barBorderRadius, width: barWidth, height: barHeight}]}>
+          <Flex justify="center" style={styles.filterLabelsWrapper}>
+            <FilterLabel label="品牌" isTextActive={false} isDrawerActive={false} />
+            <FilterLabel label="色膠種類" isTextActive={false} isDrawerActive={false} />
+          </Flex>
+        </Animated.View>
+      </View>
   )
 }
 
@@ -94,7 +192,7 @@ function FilterLabel({
   label: string | ReactNode
   isTextActive: boolean
   isDrawerActive: boolean
-  onPress: () => void
+  onPress?: () => void
 }) {
   const colorAnim = useAnimatedValue(isTextActive ? 1 : 0)
   const rotateAnim = useAnimatedValue(isDrawerActive ? 1 : 0)

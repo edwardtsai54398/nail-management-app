@@ -1,16 +1,17 @@
 import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
+import FloatingBtn from '@/components/ui/FloatingBtn'
 import PolishCard from '@/components/ui/PolishCard'
-import { getPolishList } from '@/db/queries/polishItem'
-import { useSQLiteContext } from 'expo-sqlite'
+import TopFilters from '@/components/ui/TopFilters'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
+import { getPolishList } from '@/db/queries/polishItem'
 import { Polish, SectionData } from '@/types/ui'
+import AntDesign from '@expo/vector-icons/AntDesign'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useSQLiteContext } from 'expo-sqlite'
 import { useCallback, useState } from 'react'
 import { SectionList, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import AntDesign from '@expo/vector-icons/AntDesign'
-import FloatingBtn from '@/components/ui/FloatingBtn'
-import { useRouter, useFocusEffect } from 'expo-router'
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   const result: T[][] = []
@@ -44,6 +45,9 @@ export default function Index() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Flex justify="end" style={{height: 60, width: '100%'}}>
+        <TopFilters></TopFilters>
+      </Flex>
       <SectionList
         sections={polishSectionData}
         stickySectionHeadersEnabled={true}
