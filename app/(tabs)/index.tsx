@@ -2,16 +2,22 @@ import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
 import FloatingBtn from '@/components/ui/FloatingBtn'
 import PolishCard from '@/components/ui/PolishCard'
-import TopFilters from '@/components/ui/TopFilters'
+import TopFilters, {TopFilterOption, TopFiltersRef, FilterOption} from '@/components/ui/TopFilters'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
 import { getPolishList } from '@/db/queries/polishItem'
-import { Polish, SectionData } from '@/types/ui'
+import {Polish, Brand, SectionData, PolishType} from '@/types/ui'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
-import { useCallback, useState } from 'react'
-import { SectionList, StyleSheet, View } from 'react-native'
+import {useCallback, useMemo, useRef, useState} from 'react'
+import {ScrollView, SectionList, StyleSheet, View} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import SelectList from "@/components/ui/SelectList";
+import {useBrandStore} from "@/store/brands";
+import {getBrands} from "@/db/queries/brand";
+import {usePolishTypesStore} from "@/store/polishTypes";
+import {getAllPolishTypes} from "@/db/queries/polishTypes";
+import BottomFilters from "@/components/ui/BottomFilters";
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   const result: T[][] = []
@@ -21,11 +27,48 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   return result
 }
 
+const TopFilterOptions: FilterOption[] = [
+  {
+    label: '品牌',
+    name: 'brandId'
+  },
+  {
+    label: '色膠種類',
+    name: 'polishType'
+  },
+  {
+    label: '顏色',
+    name: 'color'
+  },
+  {
+    label: '更多',
+    name: 'more'
+  },
+]
+
 export default function Index() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const [polishSectionData, setPolishData] = useState<SectionData>([])
   const db = useSQLiteContext()
+  const brands = useBrandStore(state => state.data)
+  const setBrands = useBrandStore(state => state.setData)
+  const polishTypes = usePolishTypesStore(state => state.data)
+  const setPolishTypes = usePolishTypesStore(state => state.setData)
+  const [polishSectionData, setPolishData] = useState<SectionData>([])
+  const [brandSelected, setBrandSelected] = useState<Brand | null>(null)
+  const [polishTypeSelected, setPolishTypeSelected] = useState<PolishType | null>(null)
+  const optionsSelected = useMemo(() => {
+    let selected: string[] = []
+    if(brandSelected){
+      selected.push('brandId')
+    }
+    if(polishTypeSelected){
+      selected.push('polishType')
+    }
+    return selected
+  }, [brandSelected, polishTypeSelected])
+  const topFiltersRef = useRef<TopFiltersRef>(null)
+
   useFocusEffect(
     useCallback(() => {
       console.log('useFocusEffect')
@@ -40,15 +83,43 @@ export default function Index() {
           setPolishData(sectionData)
         }
       })
+      getBrands(db).then(res => {
+        if (!res.success) return
+        setBrands(res.data)
+      })
+      getAllPolishTypes(db).then(res => {
+        if (!res.success) return
+        setPolishTypes(res.data)
+      })
     }, [db]),
   )
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Flex justify="end" style={{height: 60, width: '100%'}}>
-        <TopFilters></TopFilters>
+        {/*<TopFilters ref={topFiltersRef} options={TopFilterOptions} optionsSelected={optionsSelected}>*/}
+        {/*  <TopFilterOption name={'brandId'}>*/}
+        {/*      <SelectList*/}
+        {/*        data={brands}*/}
+        {/*        renderItem={(item) => item.brandName}*/}
+        {/*        onItemPress={(item) => {setBrandSelected(item)}}*/}
+        {/*        isSelected={(item) => item.brandId === brandSelected?.brandId}*/}
+        {/*      />*/}
+        {/*  </TopFilterOption>*/}
+        {/*  <TopFilterOption name={'polishType'} drawerHeight={400}>*/}
+
+        {/*      <SelectList*/}
+        {/*        data={polishTypes}*/}
+        {/*        renderItem={(item) => item.name}*/}
+        {/*        onItemPress={(item) => {setPolishTypeSelected(item)}}*/}
+        {/*        isSelected={(item) => item.typeId === polishTypeSelected?.typeId}*/}
+        {/*      />*/}
+        {/*  </TopFilterOption>*/}
+        {/*</TopFilters>*/}
+        <BottomFilters/>
       </Flex>
       <SectionList
+        // pointerEvents={'none'}
         sections={polishSectionData}
         stickySectionHeadersEnabled={true}
         renderSectionHeader={({ section }) => (
