@@ -4,7 +4,7 @@ import FloatingBtn from '@/components/ui/FloatingBtn'
 import PolishCard from '@/components/ui/PolishCard'
 import TopFilters from '@/components/ui/TopFilters'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
-import { getPolishList } from '@/db/queries/polishItem'
+import { getPolishList, PolishListFilterQuery } from '@/db/queries/polishItem'
 import { Polish, SectionData } from '@/types/ui'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -29,8 +29,13 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       console.log('useFocusEffect')
+      const payload: PolishListFilterQuery = {
+        // brandId: '01',
+        // colorIds: ['PINK', 'PURPLE'],
+        polishType: { typeId: 'GLITTER_GEL', isOfficial: true },
+      }
 
-      getPolishList(db).then((result) => {
+      getPolishList(db, payload).then((result) => {
         // console.log(result);
         if (result.success) {
           const sectionData = result.data.series.map((s, i) => ({
@@ -45,7 +50,7 @@ export default function Index() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Flex justify="end" style={{height: 60, width: '100%'}}>
+      <Flex justify="end" style={{ height: 60, width: '100%' }}>
         <TopFilters></TopFilters>
       </Flex>
       <SectionList

@@ -24,7 +24,7 @@ const ColorSelector = forwardRef<PolishColumnRef<string[]>, ColorSelectorProps>(
       if (!response.success) return
       setColorTypes(response.data)
     })
-  }, [])
+  }, [db])
 
   const isColorSelected = useCallback(
     (color: Color) => {
