@@ -1,37 +1,52 @@
-import { SQLiteDatabase } from 'expo-sqlite'
-import * as Crypto from 'expo-crypto'
-import { type Polish, Series, QueryResult, PolishImage } from '@/types/ui'
 import { errorMsg, isDataExists } from '@/db/queries/helpers'
 import { getUserId } from '@/db/queries/users'
+import { type Polish, PolishImage, QueryResult, Series } from '@/types/ui'
+import * as Crypto from 'expo-crypto'
+import { SQLiteDatabase } from 'expo-sqlite'
 
 type PolishListResult = {
   series: Series[]
   polishItems: Polish[][]
 }
 
-export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<PolishListResult>> => {
-  type PolishQueryRow = {
-    polishId: string
-    polishName: string
-    stock: number
-    isFavorites: number
-    note: string | null
-    uPolishTypeId: string | null
-    uPolishTypeName: string | null
-    oPolishTypeId: string | null
-    oPolishTypeName: string | null
-    colorIds: string | null
-    colorNames: string | null
-    tagIds: string | null
-    tagNames: string | null
-    imgURLs: string | null
-    imgOrders: string | null
-    seriesId: string
-    seriesName: string
-    brandId: string
-    brandName: string
+export type PolishListFilterQuery = {
+  brandId?: string
+  colorIds?: string[]
+  polishType?: {
+    typeId: string
+    isOfficial: boolean
   }
-  const sql = `
+  tagIds?: string[]
+  isFavorites?: boolean
+}
+
+type PolishQueryRow = {
+  polishId: string
+  polishName: string
+  stock: number
+  isFavorites: number
+  note: string | null
+  uPolishTypeId: string | null
+  uPolishTypeName: string | null
+  oPolishTypeId: string | null
+  oPolishTypeName: string | null
+  colorIds: string | null
+  colorNames: string | null
+  tagIds: string | null
+  tagNames: string | null
+  imgURLs: string | null
+  imgOrders: string | null
+  seriesId: string
+  seriesName: string
+  brandId: string
+  brandName: string
+}
+
+export const getPolishList = async (
+  db: SQLiteDatabase,
+  filterQuery?: PolishListFilterQuery,
+): Promise<QueryResult<PolishListResult>> => {
+  let sql = `
         SELECT
             uPS.stock_id AS polishId,
             uP.color_name AS polishName,
@@ -64,15 +79,72 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
             LEFT JOIN polish_item_tags PTags ON PTags.stock_id = uPS.stock_id
             LEFT JOIN user_tags T ON T.tag_id = PTags.tag_id
             LEFT JOIN polish_images I ON I.stock_id = uPS.stock_id
-        GROUP BY uPS.stock_id
-        ORDER BY
-            uB.brand_name,
-            uS.series_name,
-            uPS.created_at
         `
+  if (filterQuery) {
+    sql += 'WHERE '
+    let querys: string[] = []
+    if (filterQuery.brandId) {
+      querys.push('uB.brand_id = $brandId')
+    }
+    if ('isFavorites' in filterQuery) {
+      querys.push('uPS.is_favorite = $isFavorites')
+    }
+    if (filterQuery.polishType) {
+      const stmt = filterQuery.polishType.isOfficial
+        ? 'oPT.type_key = $polishTypeId'
+        : 'uPT.polish_type_id = $polishTypeId'
+      querys.push(stmt)
+    }
+    if (filterQuery.tagIds) {
+      const cond: string[] = []
+      filterQuery.tagIds.forEach((t, i) => {
+        cond.push(`T.tag_id = $tagId${i}`)
+      })
+      querys.push(`(${cond.join(' OR ')})`)
+    }
+    if (filterQuery.colorIds) {
+      const cond: string[] = []
+      filterQuery.colorIds.forEach((c, i) => {
+        cond.push(`oC.color_key = $colorId${i}`)
+      })
+      querys.push(`(${cond.join(' OR ')})`)
+    }
+    sql += querys.join(' AND ')
+  }
+  sql += `
+    GROUP BY uPS.stock_id
+    ORDER BY
+      uB.brand_name,
+      uS.series_name,
+      uPS.created_at
+  `
+  console.log(sql)
+  let params: Record<string, string | boolean> = {}
 
+  if (filterQuery?.brandId) {
+    params.$brandId = filterQuery.brandId
+  }
+  if (filterQuery && 'isFavorites' in filterQuery) {
+    params.$isFavorites = filterQuery.isFavorites!
+  }
+  if (filterQuery?.polishType) {
+    params.$polishTypeId = filterQuery.polishType.typeId
+  }
+  if (filterQuery?.colorIds) {
+    filterQuery.colorIds.forEach((c, i) => {
+      params[`$colorId${i}`] = c
+    })
+  }
+  if (filterQuery?.tagIds) {
+    filterQuery.tagIds.forEach((c, i) => {
+      params[`$tagId${i}`] = c
+    })
+  }
+  const statement = await db.prepareAsync(sql)
   try {
-    const rows = await db.getAllAsync<PolishQueryRow>(sql)
+    const result = await statement.executeAsync<PolishQueryRow>(params)
+    const rows = await result.getAllAsync()
+
     const seriesMap = new Map<string, Series>([])
     const polishItemsGroupBySeries = new Map<string, Polish[]>([])
     for (const row of rows) {
@@ -127,12 +199,12 @@ export const getPolishList = async (db: SQLiteDatabase): Promise<QueryResult<Pol
     // console.log('POLISH_QUERY_RESULT');
     // console.log(Array.from(seriesMap.values()));
     // console.log(Array.from(polishItemsGroupBySeries.values()));
-    const result: PolishListResult = {
+    const data: PolishListResult = {
       series: Array.from(seriesMap.values()),
       polishItems: Array.from(polishItemsGroupBySeries.values()),
     }
     // console.log(rows);
-    return { success: true, data: result }
+    return { success: true, data }
   } catch (e: any) {
     console.error('GET_POLISH_LIST ERROR:')
     console.error(e)

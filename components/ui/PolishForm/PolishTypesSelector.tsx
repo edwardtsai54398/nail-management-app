@@ -36,7 +36,7 @@ const PolishTypesSelector = forwardRef<PolishColumnRef<PolishType | null>, Types
         }
         setPolishTypes(response.data)
       })
-    }, [getAllPolishTypes, polishTypes, setPolishTypes])
+    }, [polishTypes, setPolishTypes, db])
 
     const handleTagPress = useCallback((item: PolishType) => {
       console.log('handleTagPress', item)

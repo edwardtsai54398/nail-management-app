@@ -1,23 +1,22 @@
 import { Col, Flex, Row } from '@/components/layout/Flex'
 import { ThemeText } from '@/components/layout/ThemeText'
+import BottomFilters from '@/components/ui/BottomFilters'
 import FloatingBtn from '@/components/ui/FloatingBtn'
 import PolishCard from '@/components/ui/PolishCard'
-import TopFilters, {TopFilterOption, TopFiltersRef, FilterOption} from '@/components/ui/TopFilters'
+import { FilterOption, TopFiltersRef } from '@/components/ui/TopFilters'
 import { FONT_SIZES, GRID_GAP, SPACING } from '@/constants/layout'
-import { getPolishList } from '@/db/queries/polishItem'
-import {Polish, Brand, SectionData, PolishType} from '@/types/ui'
+import { getBrands } from '@/db/queries/brand'
+import { getPolishList, PolishListFilterQuery } from '@/db/queries/polishItem'
+import { getAllPolishTypes } from '@/db/queries/polishTypes'
+import { useBrandStore } from '@/store/brands'
+import { usePolishTypesStore } from '@/store/polishTypes'
+import { Brand, Polish, PolishType, SectionData } from '@/types/ui'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
-import {useCallback, useMemo, useRef, useState} from 'react'
-import {ScrollView, SectionList, StyleSheet, View} from 'react-native'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { SectionList, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import SelectList from "@/components/ui/SelectList";
-import {useBrandStore} from "@/store/brands";
-import {getBrands} from "@/db/queries/brand";
-import {usePolishTypesStore} from "@/store/polishTypes";
-import {getAllPolishTypes} from "@/db/queries/polishTypes";
-import BottomFilters from "@/components/ui/BottomFilters";
 
 function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
   const result: T[][] = []
@@ -30,19 +29,19 @@ function groupInRows<T>(data: T[], columnsPerRow: number): T[][] {
 const TopFilterOptions: FilterOption[] = [
   {
     label: '品牌',
-    name: 'brandId'
+    name: 'brandId',
   },
   {
     label: '色膠種類',
-    name: 'polishType'
+    name: 'polishType',
   },
   {
     label: '顏色',
-    name: 'color'
+    name: 'color',
   },
   {
     label: '更多',
-    name: 'more'
+    name: 'more',
   },
 ]
 
@@ -50,19 +49,19 @@ export default function Index() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const db = useSQLiteContext()
-  const brands = useBrandStore(state => state.data)
-  const setBrands = useBrandStore(state => state.setData)
-  const polishTypes = usePolishTypesStore(state => state.data)
-  const setPolishTypes = usePolishTypesStore(state => state.setData)
+  const brands = useBrandStore((state) => state.data)
+  const setBrands = useBrandStore((state) => state.setData)
+  const polishTypes = usePolishTypesStore((state) => state.data)
+  const setPolishTypes = usePolishTypesStore((state) => state.setData)
   const [polishSectionData, setPolishData] = useState<SectionData>([])
   const [brandSelected, setBrandSelected] = useState<Brand | null>(null)
   const [polishTypeSelected, setPolishTypeSelected] = useState<PolishType | null>(null)
   const optionsSelected = useMemo(() => {
     let selected: string[] = []
-    if(brandSelected){
+    if (brandSelected) {
       selected.push('brandId')
     }
-    if(polishTypeSelected){
+    if (polishTypeSelected) {
       selected.push('polishType')
     }
     return selected
@@ -72,8 +71,13 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       console.log('useFocusEffect')
+      const payload: PolishListFilterQuery = {
+        // brandId: '01',
+        // colorIds: ['PINK', 'PURPLE'],
+        polishType: { typeId: 'GLITTER_GEL', isOfficial: true },
+      }
 
-      getPolishList(db).then((result) => {
+      getPolishList(db, payload).then((result) => {
         // console.log(result);
         if (result.success) {
           const sectionData = result.data.series.map((s, i) => ({
@@ -83,11 +87,11 @@ export default function Index() {
           setPolishData(sectionData)
         }
       })
-      getBrands(db).then(res => {
+      getBrands(db).then((res) => {
         if (!res.success) return
         setBrands(res.data)
       })
-      getAllPolishTypes(db).then(res => {
+      getAllPolishTypes(db).then((res) => {
         if (!res.success) return
         setPolishTypes(res.data)
       })
@@ -96,7 +100,7 @@ export default function Index() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Flex justify="end" style={{height: 60, width: '100%'}}>
+      <Flex justify="end" style={{ height: 60, width: '100%' }}>
         {/*<TopFilters ref={topFiltersRef} options={TopFilterOptions} optionsSelected={optionsSelected}>*/}
         {/*  <TopFilterOption name={'brandId'}>*/}
         {/*      <SelectList*/}
@@ -116,7 +120,7 @@ export default function Index() {
         {/*      />*/}
         {/*  </TopFilterOption>*/}
         {/*</TopFilters>*/}
-        <BottomFilters/>
+        <BottomFilters />
       </Flex>
       <SectionList
         // pointerEvents={'none'}
