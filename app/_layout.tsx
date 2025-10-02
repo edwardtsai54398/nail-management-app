@@ -1,10 +1,10 @@
 import { ThemeText } from '@/components/layout/ThemeText'
-import { runMigrations } from '@/db/migrations'
-import { Stack } from 'expo-router'
-import { Suspense } from 'react'
-import { SQLiteProvider } from 'expo-sqlite'
 import DrizzleStudio from '@/components/ui/DrizzleStudio'
+import { runMigrations } from '@/db/migrations'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
+import { Stack } from 'expo-router'
+import { SQLiteProvider } from 'expo-sqlite'
+import { Suspense } from 'react'
 
 export default function RootLayout() {
   return (

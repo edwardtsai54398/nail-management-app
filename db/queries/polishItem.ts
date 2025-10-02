@@ -80,7 +80,7 @@ export const getPolishList = async (
             LEFT JOIN user_tags T ON T.tag_id = PTags.tag_id
             LEFT JOIN polish_images I ON I.stock_id = uPS.stock_id
         `
-  if (filterQuery) {
+  if (filterQuery && Object.keys(filterQuery).length) {
     sql += 'WHERE '
     let querys: string[] = []
     if (filterQuery.brandId) {
@@ -118,7 +118,6 @@ export const getPolishList = async (
       uS.series_name,
       uPS.created_at
   `
-  console.log(sql)
   let params: Record<string, string | boolean> = {}
 
   if (filterQuery?.brandId) {

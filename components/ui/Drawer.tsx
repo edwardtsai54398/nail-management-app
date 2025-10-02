@@ -1,8 +1,8 @@
-import { View, ScrollView, StyleSheet, Animated, useAnimatedValue, ViewStyle } from 'react-native'
-import { ReactNode, useEffect, useContext, useMemo } from 'react'
-import { SPACING } from '@/constants/layout'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { OverlayContext } from '@/components/ui/OverlayProvider'
+import { SPACING } from '@/constants/layout'
+import { ReactNode, useContext, useEffect, useMemo } from 'react'
+import { Animated, ScrollView, StyleSheet, useAnimatedValue, View, ViewStyle } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type DrawerProps = {
   show: boolean
@@ -11,7 +11,7 @@ export type DrawerProps = {
   onClose: () => void
   footer?: ReactNode
   direction?: 't-b' | 'b-t'
-  containerStyles: ViewStyle
+  containerStyles?: ViewStyle
 }
 
 export const drawerStyles = StyleSheet.create({

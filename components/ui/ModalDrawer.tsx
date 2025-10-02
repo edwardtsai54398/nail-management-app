@@ -1,3 +1,4 @@
+import { SPACING } from '@/constants/layout'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Animated,
@@ -9,6 +10,29 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { drawerStyles, type DrawerProps } from './Drawer'
+
+const HandleBar = () => {
+  return (
+    <View style={handleBarStyles.container}>
+      <View style={handleBarStyles.bar} />
+    </View>
+  )
+}
+
+const handleBarStyles = StyleSheet.create({
+  container: {
+    padding: SPACING.sm,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bar: {
+    backgroundColor: '#555',
+    height: 8,
+    borderRadius: 4,
+    width: 48,
+  },
+})
 
 const duration = 250
 
@@ -33,6 +57,11 @@ const ModalDrawer = ({
     drawerHeight * (direction === 't-b' ? -1 : 1) + extraTranslateY,
   )
   const opacity = useAnimatedValue(0)
+  const computedHeight = useMemo(
+    () => drawerHeight + (direction === 't-b' ? insets.top : insets.bottom),
+    [drawerHeight, direction, insets],
+  )
+  const height = useAnimatedValue(computedHeight)
 
   const slideIn = () => {
     // Will change fadeAnim value to 1 in 5 seconds
@@ -84,6 +113,14 @@ const ModalDrawer = ({
     }
   }, [hideOverlay, showOverlay, show])
 
+  useEffect(() => {
+    Animated.timing(height, {
+      toValue: computedHeight,
+      duration,
+      useNativeDriver: false,
+    }).start()
+  }, [computedHeight, height])
+
   return (
     <Modal transparent animationType="none" visible={showModal} statusBarTranslucent={true}>
       {/* 遮罩 */}
@@ -97,15 +134,18 @@ const ModalDrawer = ({
           drawerStyles.drawerContainer,
           direction === 't-b' ? drawerStyles.topDrawer : drawerStyles.bottomDrawer,
           {
-            height: drawerHeight + (direction === 't-b' ? insets.top : insets.bottom),
             translateY: translateY,
           },
           containerStyles,
         ]}>
-        <View style={{ height: direction === 't-b' ? insets.top : 0 }}></View>
-        {children}
-        {/* <ScrollView style={[drawerStyles.body]}></ScrollView> */}
-        <View style={{ height: direction === 'b-t' ? insets.bottom : 0 }}></View>
+        <Animated.View style={{ height, display: 'flex' }}>
+          {direction === 't-b' ? <View style={{ height: insets.top }}></View> : <HandleBar />}
+
+          <View style={{ height: direction === 't-b' ? insets.top : 0 }}></View>
+          <View style={{ flex: 1 }}>{children}</View>
+
+          {direction === 'b-t' ? <View style={{ height: insets.bottom }}></View> : <HandleBar />}
+        </Animated.View>
         {footer ? (
           <View style={[drawerStyles.footer]}>
             {footer}
